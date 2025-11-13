@@ -82,8 +82,9 @@ export const VehicleSelector = ({ onVehicleSelect }: VehicleSelectorProps) => {
 
       // If no data, call edge function to populate
       if (uniqueYears.length === 0) {
-        toast.info("Loading vehicle data from EPA...");
+        toast.info("Loading complete EPA vehicle database (2010-2026). This may take a moment...");
         await supabase.functions.invoke("fetch-epa-vehicles");
+        toast.success("Vehicle database loaded successfully!");
         // Retry fetching years
         fetchYears();
       }

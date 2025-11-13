@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { parse } from "https://deno.land/std@0.168.0/encoding/csv.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -13,283 +14,101 @@ serve(async (req) => {
   }
 
   try {
-    console.log("Fetching EPA vehicle data...");
+    console.log("Fetching EPA vehicle data from fueleconomy.gov...");
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Sample popular vehicles data for 2010-2024
-    // In production, this would call the actual EPA API
-    const sampleVehicles = [
-      // 2024
-      { year: 2024, make: "Toyota", model: "Camry", mpg_combined: 32, fuel_type: "Gasoline" },
-      { year: 2024, make: "Toyota", model: "Corolla", mpg_combined: 35, fuel_type: "Gasoline" },
-      { year: 2024, make: "Toyota", model: "RAV4", mpg_combined: 30, fuel_type: "Gasoline" },
-      { year: 2024, make: "Honda", model: "Civic", mpg_combined: 35, fuel_type: "Gasoline" },
-      { year: 2024, make: "Honda", model: "Accord", mpg_combined: 32, fuel_type: "Gasoline" },
-      { year: 2024, make: "Honda", model: "CR-V", mpg_combined: 30, fuel_type: "Gasoline" },
-      { year: 2024, make: "Ford", model: "F-150", mpg_combined: 22, fuel_type: "Gasoline" },
-      { year: 2024, make: "Ford", model: "Mustang", mpg_combined: 23, fuel_type: "Gasoline" },
-      { year: 2024, make: "Ford", model: "Explorer", mpg_combined: 24, fuel_type: "Gasoline" },
-      { year: 2024, make: "Chevrolet", model: "Silverado", mpg_combined: 20, fuel_type: "Gasoline" },
-      { year: 2024, make: "Chevrolet", model: "Malibu", mpg_combined: 32, fuel_type: "Gasoline" },
-      { year: 2024, make: "Chevrolet", model: "Equinox", mpg_combined: 28, fuel_type: "Gasoline" },
-      { year: 2024, make: "Tesla", model: "Model 3", mpg_combined: 132, fuel_type: "Electric" },
-      { year: 2024, make: "Tesla", model: "Model Y", mpg_combined: 122, fuel_type: "Electric" },
-      { year: 2024, make: "Nissan", model: "Altima", mpg_combined: 32, fuel_type: "Gasoline" },
-      { year: 2024, make: "Nissan", model: "Rogue", mpg_combined: 30, fuel_type: "Gasoline" },
-      { year: 2024, make: "Jeep", model: "Wrangler", mpg_combined: 22, fuel_type: "Gasoline" },
-      { year: 2024, make: "Jeep", model: "Grand Cherokee", mpg_combined: 22, fuel_type: "Gasoline" },
-      { year: 2024, make: "Ram", model: "1500", mpg_combined: 20, fuel_type: "Gasoline" },
-      { year: 2024, make: "Hyundai", model: "Elantra", mpg_combined: 37, fuel_type: "Gasoline" },
-      { year: 2024, make: "Hyundai", model: "Tucson", mpg_combined: 29, fuel_type: "Gasoline" },
-      { year: 2024, make: "Mazda", model: "CX-5", mpg_combined: 27, fuel_type: "Gasoline" },
-      { year: 2024, make: "Mazda", model: "Mazda3", mpg_combined: 32, fuel_type: "Gasoline" },
-      { year: 2024, make: "Subaru", model: "Outback", mpg_combined: 29, fuel_type: "Gasoline" },
-      { year: 2024, make: "Subaru", model: "Forester", mpg_combined: 29, fuel_type: "Gasoline" },
-      { year: 2024, make: "Kia", model: "Forte", mpg_combined: 35, fuel_type: "Gasoline" },
-      { year: 2024, make: "Kia", model: "Sportage", mpg_combined: 28, fuel_type: "Gasoline" },
-      { year: 2024, make: "Volkswagen", model: "Jetta", mpg_combined: 34, fuel_type: "Gasoline" },
-      { year: 2024, make: "Volkswagen", model: "Tiguan", mpg_combined: 26, fuel_type: "Gasoline" },
-      { year: 2024, make: "GMC", model: "Sierra", mpg_combined: 20, fuel_type: "Gasoline" },
-      
-      // 2023
-      { year: 2023, make: "Toyota", model: "Camry", mpg_combined: 32, fuel_type: "Gasoline" },
-      { year: 2023, make: "Toyota", model: "Corolla", mpg_combined: 34, fuel_type: "Gasoline" },
-      { year: 2023, make: "Toyota", model: "RAV4", mpg_combined: 30, fuel_type: "Gasoline" },
-      { year: 2023, make: "Honda", model: "Civic", mpg_combined: 33, fuel_type: "Gasoline" },
-      { year: 2023, make: "Honda", model: "Accord", mpg_combined: 30, fuel_type: "Gasoline" },
-      { year: 2023, make: "Honda", model: "CR-V", mpg_combined: 30, fuel_type: "Gasoline" },
-      { year: 2023, make: "Ford", model: "F-150", mpg_combined: 21, fuel_type: "Gasoline" },
-      { year: 2023, make: "Ford", model: "Escape", mpg_combined: 28, fuel_type: "Gasoline" },
-      { year: 2023, make: "Chevrolet", model: "Silverado", mpg_combined: 20, fuel_type: "Gasoline" },
-      { year: 2023, make: "Chevrolet", model: "Tahoe", mpg_combined: 18, fuel_type: "Gasoline" },
-      { year: 2023, make: "Tesla", model: "Model 3", mpg_combined: 130, fuel_type: "Electric" },
-      { year: 2023, make: "Nissan", model: "Altima", mpg_combined: 31, fuel_type: "Gasoline" },
-      { year: 2023, make: "Jeep", model: "Wrangler", mpg_combined: 21, fuel_type: "Gasoline" },
-      { year: 2023, make: "Ram", model: "1500", mpg_combined: 19, fuel_type: "Gasoline" },
-      { year: 2023, make: "Hyundai", model: "Elantra", mpg_combined: 36, fuel_type: "Gasoline" },
-      { year: 2023, make: "Mazda", model: "CX-5", mpg_combined: 26, fuel_type: "Gasoline" },
-      
-      // 2022
-      { year: 2022, make: "Toyota", model: "Camry", mpg_combined: 32, fuel_type: "Gasoline" },
-      { year: 2022, make: "Toyota", model: "Corolla", mpg_combined: 34, fuel_type: "Gasoline" },
-      { year: 2022, make: "Toyota", model: "RAV4", mpg_combined: 30, fuel_type: "Gasoline" },
-      { year: 2022, make: "Honda", model: "Civic", mpg_combined: 33, fuel_type: "Gasoline" },
-      { year: 2022, make: "Honda", model: "Accord", mpg_combined: 30, fuel_type: "Gasoline" },
-      { year: 2022, make: "Honda", model: "CR-V", mpg_combined: 30, fuel_type: "Gasoline" },
-      { year: 2022, make: "Ford", model: "F-150", mpg_combined: 21, fuel_type: "Gasoline" },
-      { year: 2022, make: "Ford", model: "Escape", mpg_combined: 28, fuel_type: "Gasoline" },
-      { year: 2022, make: "Chevrolet", model: "Silverado", mpg_combined: 20, fuel_type: "Gasoline" },
-      { year: 2022, make: "Chevrolet", model: "Malibu", mpg_combined: 32, fuel_type: "Gasoline" },
-      { year: 2022, make: "Tesla", model: "Model 3", mpg_combined: 130, fuel_type: "Electric" },
-      { year: 2022, make: "Nissan", model: "Altima", mpg_combined: 31, fuel_type: "Gasoline" },
-      { year: 2022, make: "Jeep", model: "Wrangler", mpg_combined: 21, fuel_type: "Gasoline" },
-      { year: 2022, make: "Ram", model: "1500", mpg_combined: 19, fuel_type: "Gasoline" },
-      { year: 2022, make: "Hyundai", model: "Elantra", mpg_combined: 36, fuel_type: "Gasoline" },
-      { year: 2022, make: "Mazda", model: "CX-5", mpg_combined: 26, fuel_type: "Gasoline" },
-      { year: 2022, make: "Subaru", model: "Outback", mpg_combined: 29, fuel_type: "Gasoline" },
-      { year: 2022, make: "Kia", model: "Forte", mpg_combined: 35, fuel_type: "Gasoline" },
-      { year: 2022, make: "Volkswagen", model: "Jetta", mpg_combined: 34, fuel_type: "Gasoline" },
-      
-      // 2021
-      { year: 2021, make: "Toyota", model: "Camry", mpg_combined: 32, fuel_type: "Gasoline" },
-      { year: 2021, make: "Toyota", model: "Corolla", mpg_combined: 34, fuel_type: "Gasoline" },
-      { year: 2021, make: "Toyota", model: "RAV4", mpg_combined: 30, fuel_type: "Gasoline" },
-      { year: 2021, make: "Honda", model: "Civic", mpg_combined: 33, fuel_type: "Gasoline" },
-      { year: 2021, make: "Honda", model: "Accord", mpg_combined: 30, fuel_type: "Gasoline" },
-      { year: 2021, make: "Honda", model: "CR-V", mpg_combined: 30, fuel_type: "Gasoline" },
-      { year: 2021, make: "Ford", model: "F-150", mpg_combined: 21, fuel_type: "Gasoline" },
-      { year: 2021, make: "Ford", model: "Escape", mpg_combined: 28, fuel_type: "Gasoline" },
-      { year: 2021, make: "Chevrolet", model: "Silverado", mpg_combined: 20, fuel_type: "Gasoline" },
-      { year: 2021, make: "Chevrolet", model: "Malibu", mpg_combined: 32, fuel_type: "Gasoline" },
-      { year: 2021, make: "Tesla", model: "Model 3", mpg_combined: 130, fuel_type: "Electric" },
-      { year: 2021, make: "Nissan", model: "Altima", mpg_combined: 31, fuel_type: "Gasoline" },
-      { year: 2021, make: "Jeep", model: "Wrangler", mpg_combined: 21, fuel_type: "Gasoline" },
-      { year: 2021, make: "Ram", model: "1500", mpg_combined: 19, fuel_type: "Gasoline" },
-      { year: 2021, make: "Hyundai", model: "Elantra", mpg_combined: 36, fuel_type: "Gasoline" },
-      { year: 2021, make: "Mazda", model: "CX-5", mpg_combined: 26, fuel_type: "Gasoline" },
-      { year: 2021, make: "Subaru", model: "Outback", mpg_combined: 29, fuel_type: "Gasoline" },
-      { year: 2021, make: "Kia", model: "Forte", mpg_combined: 35, fuel_type: "Gasoline" },
-      
-      // 2020
-      { year: 2020, make: "Toyota", model: "Camry", mpg_combined: 32, fuel_type: "Gasoline" },
-      { year: 2020, make: "Toyota", model: "Corolla", mpg_combined: 34, fuel_type: "Gasoline" },
-      { year: 2020, make: "Toyota", model: "RAV4", mpg_combined: 30, fuel_type: "Gasoline" },
-      { year: 2020, make: "Honda", model: "Civic", mpg_combined: 33, fuel_type: "Gasoline" },
-      { year: 2020, make: "Honda", model: "Accord", mpg_combined: 30, fuel_type: "Gasoline" },
-      { year: 2020, make: "Honda", model: "CR-V", mpg_combined: 30, fuel_type: "Gasoline" },
-      { year: 2020, make: "Ford", model: "F-150", mpg_combined: 21, fuel_type: "Gasoline" },
-      { year: 2020, make: "Ford", model: "Escape", mpg_combined: 28, fuel_type: "Gasoline" },
-      { year: 2020, make: "Chevrolet", model: "Silverado", mpg_combined: 20, fuel_type: "Gasoline" },
-      { year: 2020, make: "Chevrolet", model: "Malibu", mpg_combined: 32, fuel_type: "Gasoline" },
-      { year: 2020, make: "Tesla", model: "Model 3", mpg_combined: 130, fuel_type: "Electric" },
-      { year: 2020, make: "Nissan", model: "Altima", mpg_combined: 31, fuel_type: "Gasoline" },
-      { year: 2020, make: "Jeep", model: "Wrangler", mpg_combined: 21, fuel_type: "Gasoline" },
-      { year: 2020, make: "Ram", model: "1500", mpg_combined: 19, fuel_type: "Gasoline" },
-      { year: 2020, make: "Hyundai", model: "Elantra", mpg_combined: 35, fuel_type: "Gasoline" },
-      { year: 2020, make: "Mazda", model: "CX-5", mpg_combined: 26, fuel_type: "Gasoline" },
-      { year: 2020, make: "Subaru", model: "Outback", mpg_combined: 29, fuel_type: "Gasoline" },
-      
-      // 2019
-      { year: 2019, make: "Toyota", model: "Camry", mpg_combined: 32, fuel_type: "Gasoline" },
-      { year: 2019, make: "Toyota", model: "Corolla", mpg_combined: 33, fuel_type: "Gasoline" },
-      { year: 2019, make: "Toyota", model: "RAV4", mpg_combined: 29, fuel_type: "Gasoline" },
-      { year: 2019, make: "Honda", model: "Civic", mpg_combined: 33, fuel_type: "Gasoline" },
-      { year: 2019, make: "Honda", model: "Accord", mpg_combined: 30, fuel_type: "Gasoline" },
-      { year: 2019, make: "Honda", model: "CR-V", mpg_combined: 29, fuel_type: "Gasoline" },
-      { year: 2019, make: "Ford", model: "F-150", mpg_combined: 20, fuel_type: "Gasoline" },
-      { year: 2019, make: "Ford", model: "Escape", mpg_combined: 26, fuel_type: "Gasoline" },
-      { year: 2019, make: "Chevrolet", model: "Silverado", mpg_combined: 20, fuel_type: "Gasoline" },
-      { year: 2019, make: "Chevrolet", model: "Malibu", mpg_combined: 32, fuel_type: "Gasoline" },
-      { year: 2019, make: "Nissan", model: "Altima", mpg_combined: 31, fuel_type: "Gasoline" },
-      { year: 2019, make: "Jeep", model: "Wrangler", mpg_combined: 20, fuel_type: "Gasoline" },
-      { year: 2019, make: "Ram", model: "1500", mpg_combined: 19, fuel_type: "Gasoline" },
-      { year: 2019, make: "Hyundai", model: "Elantra", mpg_combined: 35, fuel_type: "Gasoline" },
-      { year: 2019, make: "Mazda", model: "CX-5", mpg_combined: 26, fuel_type: "Gasoline" },
-      
-      // 2018
-      { year: 2018, make: "Toyota", model: "Camry", mpg_combined: 32, fuel_type: "Gasoline" },
-      { year: 2018, make: "Toyota", model: "Corolla", mpg_combined: 33, fuel_type: "Gasoline" },
-      { year: 2018, make: "Toyota", model: "RAV4", mpg_combined: 26, fuel_type: "Gasoline" },
-      { year: 2018, make: "Honda", model: "Civic", mpg_combined: 33, fuel_type: "Gasoline" },
-      { year: 2018, make: "Honda", model: "Accord", mpg_combined: 30, fuel_type: "Gasoline" },
-      { year: 2018, make: "Honda", model: "CR-V", mpg_combined: 29, fuel_type: "Gasoline" },
-      { year: 2018, make: "Ford", model: "F-150", mpg_combined: 20, fuel_type: "Gasoline" },
-      { year: 2018, make: "Ford", model: "Escape", mpg_combined: 26, fuel_type: "Gasoline" },
-      { year: 2018, make: "Chevrolet", model: "Silverado", mpg_combined: 20, fuel_type: "Gasoline" },
-      { year: 2018, make: "Chevrolet", model: "Malibu", mpg_combined: 32, fuel_type: "Gasoline" },
-      { year: 2018, make: "Nissan", model: "Altima", mpg_combined: 31, fuel_type: "Gasoline" },
-      { year: 2018, make: "Jeep", model: "Wrangler", mpg_combined: 20, fuel_type: "Gasoline" },
-      { year: 2018, make: "Ram", model: "1500", mpg_combined: 17, fuel_type: "Gasoline" },
-      { year: 2018, make: "Hyundai", model: "Elantra", mpg_combined: 32, fuel_type: "Gasoline" },
-      
-      // 2017
-      { year: 2017, make: "Toyota", model: "Camry", mpg_combined: 28, fuel_type: "Gasoline" },
-      { year: 2017, make: "Toyota", model: "Corolla", mpg_combined: 32, fuel_type: "Gasoline" },
-      { year: 2017, make: "Toyota", model: "RAV4", mpg_combined: 26, fuel_type: "Gasoline" },
-      { year: 2017, make: "Honda", model: "Civic", mpg_combined: 35, fuel_type: "Gasoline" },
-      { year: 2017, make: "Honda", model: "Accord", mpg_combined: 30, fuel_type: "Gasoline" },
-      { year: 2017, make: "Honda", model: "CR-V", mpg_combined: 29, fuel_type: "Gasoline" },
-      { year: 2017, make: "Ford", model: "F-150", mpg_combined: 20, fuel_type: "Gasoline" },
-      { year: 2017, make: "Ford", model: "Escape", mpg_combined: 26, fuel_type: "Gasoline" },
-      { year: 2017, make: "Chevrolet", model: "Silverado", mpg_combined: 19, fuel_type: "Gasoline" },
-      { year: 2017, make: "Chevrolet", model: "Malibu", mpg_combined: 31, fuel_type: "Gasoline" },
-      { year: 2017, make: "Nissan", model: "Altima", mpg_combined: 31, fuel_type: "Gasoline" },
-      { year: 2017, make: "Jeep", model: "Wrangler", mpg_combined: 19, fuel_type: "Gasoline" },
-      { year: 2017, make: "Ram", model: "1500", mpg_combined: 17, fuel_type: "Gasoline" },
-      
-      // 2016
-      { year: 2016, make: "Toyota", model: "Camry", mpg_combined: 28, fuel_type: "Gasoline" },
-      { year: 2016, make: "Toyota", model: "Corolla", mpg_combined: 32, fuel_type: "Gasoline" },
-      { year: 2016, make: "Toyota", model: "RAV4", mpg_combined: 26, fuel_type: "Gasoline" },
-      { year: 2016, make: "Honda", model: "Civic", mpg_combined: 35, fuel_type: "Gasoline" },
-      { year: 2016, make: "Honda", model: "Accord", mpg_combined: 30, fuel_type: "Gasoline" },
-      { year: 2016, make: "Honda", model: "CR-V", mpg_combined: 29, fuel_type: "Gasoline" },
-      { year: 2016, make: "Ford", model: "F-150", mpg_combined: 20, fuel_type: "Gasoline" },
-      { year: 2016, make: "Ford", model: "Escape", mpg_combined: 26, fuel_type: "Gasoline" },
-      { year: 2016, make: "Chevrolet", model: "Silverado", mpg_combined: 19, fuel_type: "Gasoline" },
-      { year: 2016, make: "Chevrolet", model: "Malibu", mpg_combined: 31, fuel_type: "Gasoline" },
-      { year: 2016, make: "Nissan", model: "Altima", mpg_combined: 31, fuel_type: "Gasoline" },
-      { year: 2016, make: "Jeep", model: "Wrangler", mpg_combined: 19, fuel_type: "Gasoline" },
-      
-      // 2015
-      { year: 2015, make: "Toyota", model: "Camry", mpg_combined: 28, fuel_type: "Gasoline" },
-      { year: 2015, make: "Toyota", model: "Corolla", mpg_combined: 32, fuel_type: "Gasoline" },
-      { year: 2015, make: "Toyota", model: "RAV4", mpg_combined: 26, fuel_type: "Gasoline" },
-      { year: 2015, make: "Honda", model: "Civic", mpg_combined: 33, fuel_type: "Gasoline" },
-      { year: 2015, make: "Honda", model: "Accord", mpg_combined: 30, fuel_type: "Gasoline" },
-      { year: 2015, make: "Honda", model: "CR-V", mpg_combined: 29, fuel_type: "Gasoline" },
-      { year: 2015, make: "Ford", model: "F-150", mpg_combined: 20, fuel_type: "Gasoline" },
-      { year: 2015, make: "Ford", model: "Escape", mpg_combined: 26, fuel_type: "Gasoline" },
-      { year: 2015, make: "Chevrolet", model: "Silverado", mpg_combined: 19, fuel_type: "Gasoline" },
-      { year: 2015, make: "Chevrolet", model: "Malibu", mpg_combined: 29, fuel_type: "Gasoline" },
-      { year: 2015, make: "Nissan", model: "Altima", mpg_combined: 31, fuel_type: "Gasoline" },
-      
-      // 2014
-      { year: 2014, make: "Toyota", model: "Camry", mpg_combined: 28, fuel_type: "Gasoline" },
-      { year: 2014, make: "Toyota", model: "Corolla", mpg_combined: 32, fuel_type: "Gasoline" },
-      { year: 2014, make: "Toyota", model: "RAV4", mpg_combined: 26, fuel_type: "Gasoline" },
-      { year: 2014, make: "Honda", model: "Civic", mpg_combined: 33, fuel_type: "Gasoline" },
-      { year: 2014, make: "Honda", model: "Accord", mpg_combined: 30, fuel_type: "Gasoline" },
-      { year: 2014, make: "Honda", model: "CR-V", mpg_combined: 27, fuel_type: "Gasoline" },
-      { year: 2014, make: "Ford", model: "F-150", mpg_combined: 19, fuel_type: "Gasoline" },
-      { year: 2014, make: "Ford", model: "Escape", mpg_combined: 26, fuel_type: "Gasoline" },
-      { year: 2014, make: "Chevrolet", model: "Silverado", mpg_combined: 18, fuel_type: "Gasoline" },
-      { year: 2014, make: "Chevrolet", model: "Malibu", mpg_combined: 29, fuel_type: "Gasoline" },
-      
-      // 2013
-      { year: 2013, make: "Toyota", model: "Camry", mpg_combined: 28, fuel_type: "Gasoline" },
-      { year: 2013, make: "Toyota", model: "Corolla", mpg_combined: 30, fuel_type: "Gasoline" },
-      { year: 2013, make: "Toyota", model: "RAV4", mpg_combined: 25, fuel_type: "Gasoline" },
-      { year: 2013, make: "Honda", model: "Civic", mpg_combined: 32, fuel_type: "Gasoline" },
-      { year: 2013, make: "Honda", model: "Accord", mpg_combined: 30, fuel_type: "Gasoline" },
-      { year: 2013, make: "Honda", model: "CR-V", mpg_combined: 27, fuel_type: "Gasoline" },
-      { year: 2013, make: "Ford", model: "F-150", mpg_combined: 18, fuel_type: "Gasoline" },
-      { year: 2013, make: "Ford", model: "Escape", mpg_combined: 26, fuel_type: "Gasoline" },
-      { year: 2013, make: "Chevrolet", model: "Silverado", mpg_combined: 18, fuel_type: "Gasoline" },
-      { year: 2013, make: "Chevrolet", model: "Malibu", mpg_combined: 29, fuel_type: "Gasoline" },
-      
-      // 2012
-      { year: 2012, make: "Toyota", model: "Camry", mpg_combined: 28, fuel_type: "Gasoline" },
-      { year: 2012, make: "Toyota", model: "Corolla", mpg_combined: 30, fuel_type: "Gasoline" },
-      { year: 2012, make: "Toyota", model: "RAV4", mpg_combined: 24, fuel_type: "Gasoline" },
-      { year: 2012, make: "Honda", model: "Civic", mpg_combined: 32, fuel_type: "Gasoline" },
-      { year: 2012, make: "Honda", model: "Accord", mpg_combined: 27, fuel_type: "Gasoline" },
-      { year: 2012, make: "Honda", model: "CR-V", mpg_combined: 26, fuel_type: "Gasoline" },
-      { year: 2012, make: "Ford", model: "F-150", mpg_combined: 18, fuel_type: "Gasoline" },
-      { year: 2012, make: "Ford", model: "Escape", mpg_combined: 25, fuel_type: "Gasoline" },
-      { year: 2012, make: "Chevrolet", model: "Silverado", mpg_combined: 18, fuel_type: "Gasoline" },
-      { year: 2012, make: "Chevrolet", model: "Malibu", mpg_combined: 26, fuel_type: "Gasoline" },
-      
-      // 2011
-      { year: 2011, make: "Toyota", model: "Camry", mpg_combined: 26, fuel_type: "Gasoline" },
-      { year: 2011, make: "Toyota", model: "Corolla", mpg_combined: 30, fuel_type: "Gasoline" },
-      { year: 2011, make: "Toyota", model: "RAV4", mpg_combined: 24, fuel_type: "Gasoline" },
-      { year: 2011, make: "Honda", model: "Civic", mpg_combined: 29, fuel_type: "Gasoline" },
-      { year: 2011, make: "Honda", model: "Accord", mpg_combined: 27, fuel_type: "Gasoline" },
-      { year: 2011, make: "Honda", model: "CR-V", mpg_combined: 25, fuel_type: "Gasoline" },
-      { year: 2011, make: "Ford", model: "F-150", mpg_combined: 17, fuel_type: "Gasoline" },
-      { year: 2011, make: "Ford", model: "Escape", mpg_combined: 25, fuel_type: "Gasoline" },
-      { year: 2011, make: "Chevrolet", model: "Silverado", mpg_combined: 17, fuel_type: "Gasoline" },
-      { year: 2011, make: "Chevrolet", model: "Malibu", mpg_combined: 26, fuel_type: "Gasoline" },
-      
-      // 2010
-      { year: 2010, make: "Toyota", model: "Camry", mpg_combined: 26, fuel_type: "Gasoline" },
-      { year: 2010, make: "Toyota", model: "Corolla", mpg_combined: 30, fuel_type: "Gasoline" },
-      { year: 2010, make: "Toyota", model: "RAV4", mpg_combined: 24, fuel_type: "Gasoline" },
-      { year: 2010, make: "Honda", model: "Civic", mpg_combined: 29, fuel_type: "Gasoline" },
-      { year: 2010, make: "Honda", model: "Accord", mpg_combined: 26, fuel_type: "Gasoline" },
-      { year: 2010, make: "Honda", model: "CR-V", mpg_combined: 25, fuel_type: "Gasoline" },
-      { year: 2010, make: "Ford", model: "F-150", mpg_combined: 17, fuel_type: "Gasoline" },
-      { year: 2010, make: "Ford", model: "Escape", mpg_combined: 24, fuel_type: "Gasoline" },
-      { year: 2010, make: "Chevrolet", model: "Silverado", mpg_combined: 17, fuel_type: "Gasoline" },
-      { year: 2010, make: "Chevrolet", model: "Malibu", mpg_combined: 26, fuel_type: "Gasoline" },
-    ];
-
-    console.log(`Inserting ${sampleVehicles.length} vehicles...`);
-
-    // Insert vehicles (ignore conflicts for duplicates)
-    const { error: insertError } = await supabase
-      .from("vehicles")
-      .upsert(sampleVehicles, { 
-        onConflict: "year,make,model",
-        ignoreDuplicates: true 
-      });
-
-    if (insertError) {
-      console.error("Error inserting vehicles:", insertError);
-      throw insertError;
+    // Download the full EPA vehicle dataset CSV
+    console.log("Downloading EPA CSV data...");
+    const response = await fetch("https://fueleconomy.gov/feg/epadata/vehicles.csv");
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch EPA data: ${response.statusText}`);
     }
 
-    console.log("Successfully populated vehicle data");
+    const csvText = await response.text();
+    console.log("Parsing CSV data...");
+    
+    const records = parse(csvText, {
+      skipFirstRow: true,
+      columns: [
+        "barrels08", "barrelsA08", "charge120", "charge240", "city08", "city08U",
+        "cityA08", "cityA08U", "cityCD", "cityE", "cityUF", "co2", "co2A",
+        "co2TailpipeAGpm", "co2TailpipeGpm", "comb08", "comb08U", "combA08",
+        "combA08U", "combE", "combinedCD", "combinedUF", "cylinders", "displ",
+        "drive", "eng_dscr", "feScore", "fuelCost08", "fuelCostA08", "fuelType",
+        "fuelType1", "ghgScore", "ghgScoreA", "highway08", "highway08U",
+        "highwayA08", "highwayA08U", "highwayCD", "highwayE", "highwayUF",
+        "hlv", "hpv", "id", "lv2", "lv4", "make", "model", "mpgData",
+        "phevBlended", "pv2", "pv4", "range", "rangeCity", "rangeCityA",
+        "rangeHwy", "rangeHwyA", "trany", "UCity", "UCityA", "UHighway",
+        "UHighwayA", "VClass", "year", "youSaveSpend", "guzzler", "trans_dscr",
+        "tCharger", "sCharger", "atvType", "fuelType2", "rangeA", "evMotor",
+        "mfrCode", "c240Dscr", "charge240b", "c240bDscr", "createdOn", "modifiedOn",
+        "startStop", "phevCity", "phevHwy", "phevComb"
+      ]
+    });
+
+    console.log(`Parsed ${records.length} total vehicles from EPA data`);
+
+    // Filter for years 2010-2026 and extract only the fields we need
+    const vehicles = records
+      .filter((record: any) => {
+        const year = parseInt(record.year);
+        return year >= 2010 && year <= 2026 && record.make && record.model;
+      })
+      .map((record: any) => ({
+        year: parseInt(record.year),
+        make: record.make.trim(),
+        model: record.model.trim(),
+        mpg_combined: record.comb08 ? parseFloat(record.comb08) : null,
+        mpg_city: record.city08 ? parseInt(record.city08) : null,
+        mpg_highway: record.highway08 ? parseInt(record.highway08) : null,
+        fuel_type: record.fuelType1 || record.fuelType || null,
+        cylinders: record.cylinders ? parseInt(record.cylinders) : null,
+        displacement: record.displ ? parseFloat(record.displ) : null,
+        transmission: record.trans_dscr || record.trany || null,
+        drive_type: record.drive || null,
+      }))
+      .filter((v: any) => v.mpg_combined && v.mpg_combined > 0); // Only include vehicles with valid MPG data
+
+    console.log(`Filtered to ${vehicles.length} vehicles (2010-2026) with valid MPG data`);
+
+    // Insert vehicles in batches to avoid timeout
+    const batchSize = 500;
+    let insertedCount = 0;
+
+    console.log(`Inserting ${vehicles.length} vehicles in batches of ${batchSize}...`);
+
+    for (let i = 0; i < vehicles.length; i += batchSize) {
+      const batch = vehicles.slice(i, i + batchSize);
+      
+      const { error: insertError } = await supabase
+        .from("vehicles")
+        .upsert(batch, { 
+          onConflict: "year,make,model",
+          ignoreDuplicates: true 
+        });
+
+      if (insertError) {
+        console.error(`Error inserting batch ${i / batchSize + 1}:`, insertError);
+        throw insertError;
+      }
+
+      insertedCount += batch.length;
+      console.log(`Inserted batch ${Math.floor(i / batchSize) + 1}, total: ${insertedCount} vehicles`);
+    }
+
+    console.log("Successfully populated all EPA vehicle data");
 
     return new Response(
       JSON.stringify({
         success: true,
-        message: "Vehicle data populated successfully",
-        count: sampleVehicles.length,
+        message: "EPA vehicle data populated successfully",
+        totalVehicles: vehicles.length,
+        yearsIncluded: "2010-2026",
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
