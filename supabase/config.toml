@@ -1,1 +1,4 @@
 project_id = "qhuqxzbixflkbzhaclyg"
+
+[functions.fetch-epa-vehicles]
+verify_jwt = false
