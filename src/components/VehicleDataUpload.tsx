@@ -32,7 +32,7 @@ export const VehicleDataUpload = () => {
       const transIdx = headers.indexOf('trany');
       const driveIdx = headers.indexOf('drive');
 
-      const vehicles = [];
+      const vehicleMap = new Map();
       
       for (let i = 1; i < lines.length; i++) {
         const line = lines[i].trim();
@@ -47,19 +47,26 @@ export const VehicleDataUpload = () => {
         
         // Filter: years 2010-2026 and valid MPG
         if (year >= 2010 && year <= 2026 && mpgCombined > 0) {
-          vehicles.push({
-            year,
-            make: values[makeIdx],
-            model: values[modelIdx],
-            mpg_city: mpgCity || null,
-            mpg_highway: mpgHighway || null,
-            mpg_combined: mpgCombined,
-            displacement: parseFloat(values[displIdx]) || null,
-            cylinders: parseInt(values[cylIdx]) || null,
-            fuel_type: values[fuelIdx] || null,
-            transmission: values[transIdx] || null,
-            drive_type: values[driveIdx] || null
-          });
+          const make = values[makeIdx];
+          const model = values[modelIdx];
+          const key = `${year}-${make}-${model}`;
+          
+          // Keep only unique year/make/model combinations
+          if (!vehicleMap.has(key)) {
+            vehicleMap.set(key, {
+              year,
+              make,
+              model,
+              mpg_city: mpgCity || null,
+              mpg_highway: mpgHighway || null,
+              mpg_combined: mpgCombined,
+              displacement: parseFloat(values[displIdx]) || null,
+              cylinders: parseInt(values[cylIdx]) || null,
+              fuel_type: values[fuelIdx] || null,
+              transmission: values[transIdx] || null,
+              drive_type: values[driveIdx] || null
+            });
+          }
         }
         
         if (i % 1000 === 0) {
@@ -67,8 +74,9 @@ export const VehicleDataUpload = () => {
         }
       }
 
-      console.log(`Parsed ${vehicles.length} valid vehicles`);
-      toast.info(`Parsed ${vehicles.length} vehicles, uploading...`);
+      const vehicles = Array.from(vehicleMap.values());
+      console.log(`Parsed ${vehicles.length} unique vehicles`);
+      toast.info(`Parsed ${vehicles.length} unique vehicles, uploading...`);
 
       // Insert in batches of 500
       const batchSize = 500;
