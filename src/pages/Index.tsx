@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { VehicleSelector } from "@/components/VehicleSelector";
 import { EmissionsResult } from "@/components/EmissionsResult";
-import { VehicleDataUpload } from "@/components/VehicleDataUpload";
 import { Leaf } from "lucide-react";
 
 const Index = () => {
@@ -31,11 +30,6 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background px-4 py-8 sm:py-12">
       <div className="mx-auto max-w-2xl">
-        {/* Admin Upload */}
-        <div className="mb-8">
-          <VehicleDataUpload />
-        </div>
-
         {/* Header */}
         <div className="mb-12 text-center">
           <div className="mb-4 inline-flex items-center justify-center rounded-full bg-accent/10 p-3">
