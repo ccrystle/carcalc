@@ -77,7 +77,10 @@ export const VehicleSelector = ({ onVehicleSelect }: VehicleSelectorProps) => {
 
       if (error) throw error;
 
-      const uniqueYears = Array.from(new Set(data.map((v) => v.year)));
+      // Create unique years and ensure proper ordering
+      const yearSet = new Map<number, boolean>();
+      data.forEach((v) => yearSet.set(v.year, true));
+      const uniqueYears = Array.from(yearSet.keys()).sort((a, b) => b - a);
       setYears(uniqueYears);
 
       // If no data, call edge function to populate
