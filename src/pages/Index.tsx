@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,6 +31,14 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background px-4 py-8 sm:py-12">
       <div className="mx-auto max-w-2xl">
+        {/* Admin Login Link */}
+        <div className="mb-4 text-right">
+          <Link to="/auth">
+            <Button variant="outline" size="sm">
+              Admin Login
+            </Button>
+          </Link>
+        </div>
         {/* Header */}
         <div className="mb-12 text-center">
           <div className="mb-4 inline-flex items-center justify-center rounded-full bg-accent/10 p-3">
