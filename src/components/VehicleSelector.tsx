@@ -81,7 +81,8 @@ export const VehicleSelector = ({ onVehicleSelect }: VehicleSelectorProps) => {
         
         if (fetchError) throw fetchError;
         
-        const yearSet = new Set(allData.map((v) => v.year));
+        const list = (allData as Array<{ year: number }> | null) ?? [];
+        const yearSet = new Set(list.map((v) => v.year));
         const uniqueYears = Array.from(yearSet).sort((a, b) => b - a);
         setYears(uniqueYears);
 
@@ -95,7 +96,8 @@ export const VehicleSelector = ({ onVehicleSelect }: VehicleSelectorProps) => {
         return;
       }
 
-      const sortedYears = data.map((item: any) => item.year).sort((a: number, b: number) => b - a);
+      const yearRows = (data as Array<{ year: number }> | null) ?? [];
+      const sortedYears = yearRows.map((item) => item.year).sort((a, b) => b - a);
       setYears(sortedYears);
 
       // If no data, call edge function to populate
@@ -121,7 +123,8 @@ export const VehicleSelector = ({ onVehicleSelect }: VehicleSelectorProps) => {
 
       if (error) throw error;
 
-      const uniqueMakes = Array.from(new Set(data.map((v) => v.make)));
+      const rows = (data as Array<{ make: string }> | null) ?? [];
+      const uniqueMakes = Array.from(new Set(rows.map((v) => v.make)));
       setMakes(uniqueMakes);
     } catch (error) {
       console.error("Error fetching makes:", error);
@@ -140,7 +143,7 @@ export const VehicleSelector = ({ onVehicleSelect }: VehicleSelectorProps) => {
 
       if (error) throw error;
 
-      setModels(data);
+      setModels(((data as Array<{ model: string; mpg_combined: number }>) ?? []));
     } catch (error) {
       console.error("Error fetching models:", error);
       toast.error("Failed to load vehicle models");
