@@ -130,7 +130,7 @@ export default function Admin() {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
 
-    const vehicleData = {
+    const vehicleData: any = {
       year: parseInt(formData.get("year") as string),
       make: formData.get("make") as string,
       model: formData.get("model") as string,
@@ -156,7 +156,7 @@ export default function Admin() {
 
     try {
       if (editingVehicle) {
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from("vehicles")
           .update(vehicleData)
           .eq("id", editingVehicle.id);
@@ -165,7 +165,7 @@ export default function Admin() {
         toast.success("Vehicle updated successfully");
         setIsEditDialogOpen(false);
       } else {
-        const { error } = await supabase.from("vehicles").insert(vehicleData);
+        const { error } = await (supabase as any).from("vehicles").insert(vehicleData);
 
         if (error) throw error;
         toast.success("Vehicle added successfully");
