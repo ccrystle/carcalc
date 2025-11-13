@@ -84,17 +84,25 @@ export const VehicleSelector = ({ onVehicleSelect }: VehicleSelectorProps) => {
         const yearSet = new Set(allData.map((v) => v.year));
         const uniqueYears = Array.from(yearSet).sort((a, b) => b - a);
         setYears(uniqueYears);
+
+        // If no data, call edge function to populate
+        if (uniqueYears.length === 0) {
+          toast.info("Loading complete EPA vehicle database (2010-2026). This may take a moment...");
+          await supabase.functions.invoke("fetch-epa-vehicles");
+          toast.success("Vehicle database loaded successfully!");
+          fetchYears();
+        }
         return;
       }
 
-      setYears(data.map((item: any) => item.year).sort((a: number, b: number) => b - a));
+      const sortedYears = data.map((item: any) => item.year).sort((a: number, b: number) => b - a);
+      setYears(sortedYears);
 
       // If no data, call edge function to populate
-      if (uniqueYears.length === 0) {
+      if (sortedYears.length === 0) {
         toast.info("Loading complete EPA vehicle database (2010-2026). This may take a moment...");
         await supabase.functions.invoke("fetch-epa-vehicles");
         toast.success("Vehicle database loaded successfully!");
-        // Retry fetching years
         fetchYears();
       }
     } catch (error) {
