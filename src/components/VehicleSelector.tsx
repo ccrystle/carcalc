@@ -70,18 +70,24 @@ export const VehicleSelector = ({ onVehicleSelect }: VehicleSelectorProps) => {
 
   const fetchYears = async () => {
     try {
-      const { data, error } = await supabase
-        .from("vehicles")
-        .select("year")
-        .order("year", { ascending: false });
+      // Use RPC to get distinct years directly
+      const { data, error } = await supabase.rpc('get_distinct_years');
 
-      if (error) throw error;
+      if (error) {
+        // Fallback to client-side deduplication if RPC doesn't exist
+        const { data: allData, error: fetchError } = await supabase
+          .from("vehicles")
+          .select("year");
+        
+        if (fetchError) throw fetchError;
+        
+        const yearSet = new Set(allData.map((v) => v.year));
+        const uniqueYears = Array.from(yearSet).sort((a, b) => b - a);
+        setYears(uniqueYears);
+        return;
+      }
 
-      // Create unique years and ensure proper ordering
-      const yearSet = new Map<number, boolean>();
-      data.forEach((v) => yearSet.set(v.year, true));
-      const uniqueYears = Array.from(yearSet.keys()).sort((a, b) => b - a);
-      setYears(uniqueYears);
+      setYears(data.map((item: any) => item.year).sort((a: number, b: number) => b - a));
 
       // If no data, call edge function to populate
       if (uniqueYears.length === 0) {
