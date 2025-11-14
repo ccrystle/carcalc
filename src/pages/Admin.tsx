@@ -156,15 +156,29 @@ export default function Admin() {
 
   const fetchMakes = async () => {
     try {
-      const { data, error } = await supabase
-        .from("vehicles")
-        .select("make")
-        .order("make")
-        .limit(100000);
+      let allData: any[] = [];
+      let from = 0;
+      const batchSize = 1000;
+      let hasMore = true;
 
-      if (error) throw error;
+      while (hasMore) {
+        const { data, error } = await supabase
+          .from("vehicles")
+          .select("make")
+          .range(from, from + batchSize - 1);
 
-      const uniqueMakes = Array.from(new Set(data.map(v => v.make))).sort();
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+          allData = allData.concat(data);
+          from += batchSize;
+          hasMore = data.length === batchSize;
+        } else {
+          hasMore = false;
+        }
+      }
+
+      const uniqueMakes = Array.from(new Set(allData.map(v => v.make))).sort();
       setMakes(uniqueMakes);
     } catch (error) {
       console.error("Error fetching makes:", error);
