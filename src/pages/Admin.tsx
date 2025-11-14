@@ -22,7 +22,15 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Pencil, Trash2, Plus, ArrowLeft } from "lucide-react";
+import { Pencil, Trash2, Plus, ArrowLeft, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 interface Vehicle {
   id: string;
@@ -47,6 +55,11 @@ export default function Admin() {
   const [editingVehicle, setEditingVehicle] = useState<Vehicle | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [sortColumn, setSortColumn] = useState<keyof Vehicle>("make");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const itemsPerPage = 50;
 
   useEffect(() => {
     checkAdminAccess();
@@ -56,7 +69,7 @@ export default function Admin() {
     if (isAdmin) {
       fetchVehicles();
     }
-  }, [isAdmin]);
+  }, [isAdmin, currentPage, sortColumn, sortDirection]);
 
   const checkAdminAccess = async () => {
     try {
@@ -101,21 +114,35 @@ export default function Admin() {
 
   const fetchVehicles = async () => {
     try {
-      const { data, error } = await supabase
+      const from = (currentPage - 1) * itemsPerPage;
+      const to = from + itemsPerPage - 1;
+
+      const { data, error, count } = await supabase
         .from("vehicles")
-        .select("*")
-        .order("year", { ascending: false })
-        .order("make")
-        .order("model")
-        .limit(100);
+        .select("*", { count: "exact" })
+        .order(sortColumn, { ascending: sortDirection === "asc" })
+        .range(from, to);
 
       if (error) throw error;
       setVehicles(data || []);
+      setTotalCount(count || 0);
     } catch (error) {
       console.error("Error fetching vehicles:", error);
       toast.error("Failed to load vehicles");
     }
   };
+
+  const handleSort = (column: keyof Vehicle) => {
+    if (sortColumn === column) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortColumn(column);
+      setSortDirection("asc");
+    }
+    setCurrentPage(1);
+  };
+
+  const totalPages = Math.ceil(totalCount / itemsPerPage);
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this vehicle?")) return;
@@ -348,11 +375,71 @@ export default function Admin() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Year</TableHead>
-                <TableHead>Make</TableHead>
-                <TableHead>Model</TableHead>
-                <TableHead>MPG Combined</TableHead>
-                <TableHead>Fuel Type</TableHead>
+                <TableHead>
+                  <Button
+                    variant="ghost"
+                    onClick={() => handleSort("year")}
+                    className="flex items-center gap-1 hover:bg-transparent p-0 h-auto font-semibold"
+                  >
+                    Year
+                    {sortColumn === "year" && (
+                      sortDirection === "asc" ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />
+                    )}
+                    {sortColumn !== "year" && <ArrowUpDown className="h-4 w-4 opacity-50" />}
+                  </Button>
+                </TableHead>
+                <TableHead>
+                  <Button
+                    variant="ghost"
+                    onClick={() => handleSort("make")}
+                    className="flex items-center gap-1 hover:bg-transparent p-0 h-auto font-semibold"
+                  >
+                    Make
+                    {sortColumn === "make" && (
+                      sortDirection === "asc" ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />
+                    )}
+                    {sortColumn !== "make" && <ArrowUpDown className="h-4 w-4 opacity-50" />}
+                  </Button>
+                </TableHead>
+                <TableHead>
+                  <Button
+                    variant="ghost"
+                    onClick={() => handleSort("model")}
+                    className="flex items-center gap-1 hover:bg-transparent p-0 h-auto font-semibold"
+                  >
+                    Model
+                    {sortColumn === "model" && (
+                      sortDirection === "asc" ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />
+                    )}
+                    {sortColumn !== "model" && <ArrowUpDown className="h-4 w-4 opacity-50" />}
+                  </Button>
+                </TableHead>
+                <TableHead>
+                  <Button
+                    variant="ghost"
+                    onClick={() => handleSort("mpg_combined")}
+                    className="flex items-center gap-1 hover:bg-transparent p-0 h-auto font-semibold"
+                  >
+                    MPG Combined
+                    {sortColumn === "mpg_combined" && (
+                      sortDirection === "asc" ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />
+                    )}
+                    {sortColumn !== "mpg_combined" && <ArrowUpDown className="h-4 w-4 opacity-50" />}
+                  </Button>
+                </TableHead>
+                <TableHead>
+                  <Button
+                    variant="ghost"
+                    onClick={() => handleSort("fuel_type")}
+                    className="flex items-center gap-1 hover:bg-transparent p-0 h-auto font-semibold"
+                  >
+                    Fuel Type
+                    {sortColumn === "fuel_type" && (
+                      sortDirection === "asc" ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />
+                    )}
+                    {sortColumn !== "fuel_type" && <ArrowUpDown className="h-4 w-4 opacity-50" />}
+                  </Button>
+                </TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -403,6 +490,52 @@ export default function Admin() {
               ))}
             </TableBody>
           </Table>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
+            Showing {vehicles.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0} to{" "}
+            {Math.min(currentPage * itemsPerPage, totalCount)} of {totalCount} vehicles
+          </p>
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                  className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                />
+              </PaginationItem>
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                let pageNum;
+                if (totalPages <= 5) {
+                  pageNum = i + 1;
+                } else if (currentPage <= 3) {
+                  pageNum = i + 1;
+                } else if (currentPage >= totalPages - 2) {
+                  pageNum = totalPages - 4 + i;
+                } else {
+                  pageNum = currentPage - 2 + i;
+                }
+                return (
+                  <PaginationItem key={pageNum}>
+                    <PaginationLink
+                      onClick={() => setCurrentPage(pageNum)}
+                      isActive={currentPage === pageNum}
+                      className="cursor-pointer"
+                    >
+                      {pageNum}
+                    </PaginationLink>
+                  </PaginationItem>
+                );
+              })}
+              <PaginationItem>
+                <PaginationNext
+                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                  className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
         </div>
       </div>
     </div>
