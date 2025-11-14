@@ -122,11 +122,15 @@ export default function Admin() {
         .select("*", { count: "exact" })
         .order(sortColumn, { ascending: sortDirection === "asc" });
 
-      // Add secondary sorts: Make, Year, Model (skip if already primary sort)
-      const secondarySorts: (keyof Vehicle)[] = ["make", "year", "model"];
-      secondarySorts.forEach(col => {
+      // Add secondary sorts: Make ASC, Year DESC, Model ASC (skip if already primary sort)
+      const secondarySorts: Array<{ col: keyof Vehicle; ascending: boolean }> = [
+        { col: "make", ascending: true },
+        { col: "year", ascending: false },
+        { col: "model", ascending: true }
+      ];
+      secondarySorts.forEach(({ col, ascending }) => {
         if (col !== sortColumn) {
-          query = query.order(col, { ascending: true });
+          query = query.order(col, { ascending });
         }
       });
 
