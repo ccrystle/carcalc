@@ -28,21 +28,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { toast } from "sonner";
-import { Pencil, Trash2, Plus, ArrowLeft, ArrowUpDown, ArrowUp, ArrowDown, Check, ChevronsUpDown } from "lucide-react";
+import { Pencil, Trash2, Plus, ArrowLeft, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import {
   Pagination,
   PaginationContent,
@@ -51,7 +38,6 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { cn } from "@/lib/utils";
 
 interface Vehicle {
   id: string;
@@ -260,8 +246,6 @@ export default function Admin() {
   };
 
   const VehicleForm = ({ vehicle }: { vehicle?: Vehicle }) => {
-    const [open, setOpen] = useState(false);
-    const [selectedMake, setSelectedMake] = useState(vehicle?.make || "");
     const currentYear = new Date().getFullYear();
     const nextYear = currentYear + 1;
     const years = Array.from({ length: nextYear - 2010 + 1 }, (_, i) => nextYear - i);
@@ -286,48 +270,18 @@ export default function Admin() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="make">Make *</Label>
-            <input type="hidden" name="make" value={selectedMake} required />
-            <Popover open={open} onOpenChange={setOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={open}
-                  className="w-full justify-between"
-                >
-                  {selectedMake || "Select make..."}
-                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-full p-0">
-                <Command>
-                  <CommandInput placeholder="Search make..." />
-                  <CommandList>
-                    <CommandEmpty>No make found.</CommandEmpty>
-                    <CommandGroup>
-                      {makes.map((make) => (
-                        <CommandItem
-                          key={make}
-                          value={make}
-                          onSelect={(currentValue) => {
-                            setSelectedMake(currentValue === selectedMake ? "" : currentValue);
-                            setOpen(false);
-                          }}
-                        >
-                          <Check
-                            className={cn(
-                              "mr-2 h-4 w-4",
-                              selectedMake === make ? "opacity-100" : "opacity-0"
-                            )}
-                          />
-                          {make}
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
+            <Select name="make" defaultValue={vehicle?.make || ""} required>
+              <SelectTrigger>
+                <SelectValue placeholder="Select make" />
+              </SelectTrigger>
+              <SelectContent>
+                {makes.map((make) => (
+                  <SelectItem key={make} value={make}>
+                    {make}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
