@@ -173,7 +173,8 @@ export default function Admin() {
       const { data, error } = await supabase
         .from("vehicles")
         .select("make")
-        .order("make");
+        .order("make")
+        .limit(100000);
 
       if (error) throw error;
 
