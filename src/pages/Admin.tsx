@@ -60,24 +60,30 @@ export default function Admin() {
 
   const checkAdminAccess = async () => {
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      // Get fresh session
+      const { data: { session } } = await supabase.auth.getSession();
 
-      if (!user) {
+      if (!session?.user) {
         toast.error("Please log in to access admin panel");
-        navigate("/");
+        navigate("/auth");
         return;
       }
 
       const { data: roles, error } = await supabase
         .from("user_roles")
         .select("role")
-        .eq("user_id", user.id)
+        .eq("user_id", session.user.id)
         .eq("role", "admin")
         .single();
 
-      if (error || !roles) {
+      if (error) {
+        console.error("Error fetching role:", error);
+        toast.error("You don't have admin access");
+        navigate("/");
+        return;
+      }
+
+      if (!roles) {
         toast.error("You don't have admin access");
         navigate("/");
         return;
@@ -86,6 +92,7 @@ export default function Admin() {
       setIsAdmin(true);
     } catch (error) {
       console.error("Error checking admin access:", error);
+      toast.error("Access check failed");
       navigate("/");
     } finally {
       setLoading(false);
