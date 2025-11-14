@@ -21,8 +21,28 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { toast } from "sonner";
-import { Pencil, Trash2, Plus, ArrowLeft, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { Pencil, Trash2, Plus, ArrowLeft, ArrowUpDown, ArrowUp, ArrowDown, Check, ChevronsUpDown } from "lucide-react";
 import {
   Pagination,
   PaginationContent,
@@ -31,6 +51,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { cn } from "@/lib/utils";
 
 interface Vehicle {
   id: string;
@@ -52,6 +73,7 @@ export default function Admin() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [makes, setMakes] = useState<string[]>([]);
   const [editingVehicle, setEditingVehicle] = useState<Vehicle | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -68,6 +90,7 @@ export default function Admin() {
   useEffect(() => {
     if (isAdmin) {
       fetchVehicles();
+      fetchMakes();
     }
   }, [isAdmin, currentPage, sortColumn, sortDirection]);
 
@@ -145,6 +168,22 @@ export default function Admin() {
     }
   };
 
+  const fetchMakes = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("vehicles")
+        .select("make")
+        .order("make");
+
+      if (error) throw error;
+
+      const uniqueMakes = Array.from(new Set(data.map(v => v.make))).sort();
+      setMakes(uniqueMakes);
+    } catch (error) {
+      console.error("Error fetching makes:", error);
+    }
+  };
+
   const handleSort = (column: keyof Vehicle) => {
     if (sortColumn === column) {
       setSortDirection(sortDirection === "asc" ? "desc" : "asc");
@@ -181,24 +220,16 @@ export default function Admin() {
       year: parseInt(formData.get("year") as string),
       make: formData.get("make") as string,
       model: formData.get("model") as string,
-      displacement: formData.get("displacement")
-        ? parseFloat(formData.get("displacement") as string)
+      mpg_combined: formData.get("mpg")
+        ? parseFloat(formData.get("mpg") as string)
         : null,
-      cylinders: formData.get("cylinders")
-        ? parseInt(formData.get("cylinders") as string)
-        : null,
-      mpg_city: formData.get("mpg_city")
-        ? parseInt(formData.get("mpg_city") as string)
-        : null,
-      mpg_highway: formData.get("mpg_highway")
-        ? parseInt(formData.get("mpg_highway") as string)
-        : null,
-      mpg_combined: formData.get("mpg_combined")
-        ? parseFloat(formData.get("mpg_combined") as string)
-        : null,
-      fuel_type: formData.get("fuel_type") as string,
-      transmission: formData.get("transmission") as string,
-      drive_type: formData.get("drive_type") as string,
+      fuel_type: formData.get("fuel_type") as string || null,
+      displacement: null,
+      cylinders: null,
+      mpg_city: null,
+      mpg_highway: null,
+      transmission: null,
+      drive_type: null,
     };
 
     try {
@@ -227,117 +258,112 @@ export default function Admin() {
     }
   };
 
-  const VehicleForm = ({ vehicle }: { vehicle?: Vehicle }) => (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="year">Year *</Label>
-          <Input
-            id="year"
-            name="year"
-            type="number"
-            defaultValue={vehicle?.year}
-            required
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="make">Make *</Label>
-          <Input id="make" name="make" defaultValue={vehicle?.make} required />
-        </div>
-      </div>
+  const VehicleForm = ({ vehicle }: { vehicle?: Vehicle }) => {
+    const [open, setOpen] = useState(false);
+    const [selectedMake, setSelectedMake] = useState(vehicle?.make || "");
+    const currentYear = new Date().getFullYear();
+    const nextYear = currentYear + 1;
+    const years = Array.from({ length: nextYear - 2010 + 1 }, (_, i) => nextYear - i);
 
-      <div className="space-y-2">
-        <Label htmlFor="model">Model *</Label>
-        <Input id="model" name="model" defaultValue={vehicle?.model} required />
-      </div>
+    return (
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="year">Year *</Label>
+            <Select name="year" defaultValue={vehicle?.year?.toString() || nextYear.toString()} required>
+              <SelectTrigger>
+                <SelectValue placeholder="Select year" />
+              </SelectTrigger>
+              <SelectContent>
+                {years.map((year) => (
+                  <SelectItem key={year} value={year.toString()}>
+                    {year}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="make">Make *</Label>
+            <input type="hidden" name="make" value={selectedMake} required />
+            <Popover open={open} onOpenChange={setOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={open}
+                  className="w-full justify-between"
+                >
+                  {selectedMake || "Select make..."}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0">
+                <Command>
+                  <CommandInput placeholder="Search make..." />
+                  <CommandList>
+                    <CommandEmpty>No make found.</CommandEmpty>
+                    <CommandGroup>
+                      {makes.map((make) => (
+                        <CommandItem
+                          key={make}
+                          value={make}
+                          onSelect={(currentValue) => {
+                            setSelectedMake(currentValue === selectedMake ? "" : currentValue);
+                            setOpen(false);
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              selectedMake === make ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          {make}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+          </div>
+        </div>
 
-      <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="displacement">Displacement (L)</Label>
-          <Input
-            id="displacement"
-            name="displacement"
-            type="number"
-            step="0.1"
-            defaultValue={vehicle?.displacement || ""}
-          />
+          <Label htmlFor="model">Model *</Label>
+          <Input id="model" name="model" defaultValue={vehicle?.model} required />
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="cylinders">Cylinders</Label>
-          <Input
-            id="cylinders"
-            name="cylinders"
-            type="number"
-            defaultValue={vehicle?.cylinders || ""}
-          />
-        </div>
-      </div>
 
-      <div className="grid grid-cols-3 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="mpg_city">MPG City</Label>
-          <Input
-            id="mpg_city"
-            name="mpg_city"
-            type="number"
-            defaultValue={vehicle?.mpg_city || ""}
-          />
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="mpg">MPG</Label>
+            <Input
+              id="mpg"
+              name="mpg"
+              type="number"
+              step="0.1"
+              defaultValue={vehicle?.mpg_combined || ""}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="fuel_type">Fuel Type</Label>
+            <Input
+              id="fuel_type"
+              name="fuel_type"
+              defaultValue={vehicle?.fuel_type || ""}
+            />
+          </div>
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="mpg_highway">MPG Highway</Label>
-          <Input
-            id="mpg_highway"
-            name="mpg_highway"
-            type="number"
-            defaultValue={vehicle?.mpg_highway || ""}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="mpg_combined">MPG Combined</Label>
-          <Input
-            id="mpg_combined"
-            name="mpg_combined"
-            type="number"
-            step="0.1"
-            defaultValue={vehicle?.mpg_combined || ""}
-          />
-        </div>
-      </div>
 
-      <div className="grid grid-cols-3 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="fuel_type">Fuel Type</Label>
-          <Input
-            id="fuel_type"
-            name="fuel_type"
-            defaultValue={vehicle?.fuel_type || ""}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="transmission">Transmission</Label>
-          <Input
-            id="transmission"
-            name="transmission"
-            defaultValue={vehicle?.transmission || ""}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="drive_type">Drive Type</Label>
-          <Input
-            id="drive_type"
-            name="drive_type"
-            defaultValue={vehicle?.drive_type || ""}
-          />
-        </div>
-      </div>
-
-      <DialogFooter>
-        <Button type="submit">
-          {vehicle ? "Update Vehicle" : "Add Vehicle"}
-        </Button>
-      </DialogFooter>
-    </form>
-  );
+        <DialogFooter>
+          <Button type="submit">
+            {vehicle ? "Update Vehicle" : "Add Vehicle"}
+          </Button>
+        </DialogFooter>
+      </form>
+    );
+  };
 
   if (loading) {
     return (
