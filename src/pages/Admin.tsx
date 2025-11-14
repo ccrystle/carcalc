@@ -117,11 +117,20 @@ export default function Admin() {
       const from = (currentPage - 1) * itemsPerPage;
       const to = from + itemsPerPage - 1;
 
-      const { data, error, count } = await supabase
+      let query = supabase
         .from("vehicles")
         .select("*", { count: "exact" })
-        .order(sortColumn, { ascending: sortDirection === "asc" })
-        .range(from, to);
+        .order(sortColumn, { ascending: sortDirection === "asc" });
+
+      // Add secondary sorts: Make, Year, Model (skip if already primary sort)
+      const secondarySorts: (keyof Vehicle)[] = ["make", "year", "model"];
+      secondarySorts.forEach(col => {
+        if (col !== sortColumn) {
+          query = query.order(col, { ascending: true });
+        }
+      });
+
+      const { data, error, count } = await query.range(from, to);
 
       if (error) throw error;
       setVehicles(data || []);
