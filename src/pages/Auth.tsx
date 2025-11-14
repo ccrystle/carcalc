@@ -22,12 +22,15 @@ export default function Auth() {
     const password = formData.get("password") as string;
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) throw error;
+
+      // Wait a moment for session to fully propagate
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       toast.success("Logged in successfully");
       navigate("/admin");
