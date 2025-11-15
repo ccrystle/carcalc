@@ -37,6 +37,15 @@ export const EmissionsResult = ({
 
       <Separator className="my-6" />
 
+      <div className="rounded-lg bg-muted/50 p-4 mb-4">
+        <div className="text-xs font-medium text-muted-foreground mb-2">
+          Calculation:
+        </div>
+        <div className="font-mono text-sm text-foreground">
+          ({annualMiles.toLocaleString()} miles ÷ {vehicle?.mpgCombined} mpg = {gallonsConsumed.toFixed(0)} gallons) × 19.6 lbs CO₂/gallon ÷ 2,000 = {emissions.toFixed(2)} tons CO₂
+        </div>
+      </div>
+
       <div className="space-y-3 text-sm">
         <div className="flex justify-between">
           <span className="text-muted-foreground">Vehicle</span>
