@@ -26,7 +26,7 @@ export const VehicleSelector = ({ onVehicleSelect }: VehicleSelectorProps) => {
     Array<{ model: string; mpg_combined: number }>
   >([]);
 
-  const [selectedYear, setSelectedYear] = useState<string>("");
+  const [selectedYear, setSelectedYear] = useState<string>("2025");
   const [selectedMake, setSelectedMake] = useState<string>("");
   const [selectedModel, setSelectedModel] = useState<string>("");
 
@@ -126,6 +126,11 @@ export const VehicleSelector = ({ onVehicleSelect }: VehicleSelectorProps) => {
       const rows = (data as Array<{ make: string }> | null) ?? [];
       const uniqueMakes = Array.from(new Set(rows.map((v) => v.make)));
       setMakes(uniqueMakes);
+      
+      // Set default make to Acura if it exists
+      if (uniqueMakes.includes("Acura")) {
+        setSelectedMake("Acura");
+      }
     } catch (error) {
       console.error("Error fetching makes:", error);
       toast.error("Failed to load vehicle makes");

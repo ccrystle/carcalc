@@ -15,7 +15,7 @@ const Index = () => {
     model: string;
     mpgCombined: number;
   } | null>(null);
-  const [annualMiles, setAnnualMiles] = useState("");
+  const [annualMiles, setAnnualMiles] = useState("12000");
   const [emissions, setEmissions] = useState<number | null>(null);
 
   const calculateEmissions = () => {
