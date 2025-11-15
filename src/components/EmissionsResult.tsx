@@ -38,12 +38,37 @@ export const EmissionsResult = ({
       <Separator className="my-6" />
 
       <div className="rounded-lg bg-muted/50 p-4 mb-4">
-        <div className="text-xs font-medium text-muted-foreground mb-2">
+        <div className="text-xs font-medium text-muted-foreground mb-3">
           Calculation:
         </div>
-        <div className="font-mono text-sm text-foreground">
-          ({annualMiles.toLocaleString()} miles ÷ {vehicle?.mpgCombined} mpg = {gallonsConsumed.toFixed(0)} gallons) × 19.6 lbs CO₂/gallon ÷ 2,000 = {emissions.toFixed(2)} tons CO₂
-        </div>
+        <table className="w-full text-sm">
+          <tbody>
+            <tr>
+              <td className="text-right text-muted-foreground pr-4 py-1.5 align-top whitespace-nowrap">
+                Gallons of gas burned:
+              </td>
+              <td className="text-foreground font-mono py-1.5">
+                {annualMiles.toLocaleString()} miles ÷ {vehicle?.mpgCombined} mpg = {gallonsConsumed.toFixed(0)} gallons
+              </td>
+            </tr>
+            <tr>
+              <td className="text-right text-muted-foreground pr-4 py-1.5 align-top whitespace-nowrap">
+                Pounds CO₂ emitted:
+              </td>
+              <td className="text-foreground font-mono py-1.5">
+                {gallonsConsumed.toFixed(0)} gallons × 19.6 lbs CO₂ per gallon = {(gallonsConsumed * 19.6).toFixed(0)} lbs
+              </td>
+            </tr>
+            <tr>
+              <td className="text-right text-muted-foreground pr-4 py-1.5 align-top whitespace-nowrap">
+                Tons CO₂ emitted:
+              </td>
+              <td className="text-foreground font-mono py-1.5 font-semibold">
+                {emissions.toFixed(2)} tons CO₂
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
       <div className="space-y-3 text-sm">
