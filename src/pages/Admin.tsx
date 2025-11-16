@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Card } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -68,6 +69,8 @@ export default function Admin() {
   const [sortColumn, setSortColumn] = useState<keyof Vehicle>("make");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const itemsPerPage = 50;
+  const [permitCost, setPermitCost] = useState<number>(25);
+  const [editingPermitCost, setEditingPermitCost] = useState(false);
 
   useEffect(() => {
     checkAdminAccess();
@@ -77,6 +80,7 @@ export default function Admin() {
     if (isAdmin) {
       fetchVehicles();
       fetchMakes();
+      fetchPermitCost();
     }
   }, [isAdmin, currentPage, sortColumn, sortDirection]);
 
@@ -182,6 +186,37 @@ export default function Admin() {
       setMakes(uniqueMakes);
     } catch (error) {
       console.error("Error fetching makes:", error);
+    }
+  };
+
+  const fetchPermitCost = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("settings")
+        .select("value")
+        .eq("key", "co2_permit_cost")
+        .single();
+
+      if (error) throw error;
+      if (data) setPermitCost(Number(data.value));
+    } catch (error) {
+      console.error("Error fetching permit cost:", error);
+    }
+  };
+
+  const updatePermitCost = async () => {
+    try {
+      const { error } = await supabase
+        .from("settings")
+        .update({ value: permitCost })
+        .eq("key", "co2_permit_cost");
+
+      if (error) throw error;
+      toast.success("CO₂ permit cost updated successfully");
+      setEditingPermitCost(false);
+    } catch (error) {
+      console.error("Error updating permit cost:", error);
+      toast.error("Failed to update permit cost");
     }
   };
 
@@ -378,6 +413,56 @@ export default function Admin() {
             </DialogContent>
           </Dialog>
         </div>
+
+        {/* CO2 Permit Cost Configuration */}
+        <Card className="p-6">
+          <div className="flex items-center gap-4">
+            <div className="flex-1">
+              <Label htmlFor="permit-cost" className="text-sm font-medium">
+                CO₂ Permit Cost (per metric ton)
+              </Label>
+              <div className="mt-2 flex items-center gap-2">
+                <span className="text-lg font-medium">$</span>
+                {editingPermitCost ? (
+                  <Input
+                    id="permit-cost"
+                    type="number"
+                    value={permitCost}
+                    onChange={(e) => setPermitCost(Number(e.target.value))}
+                    className="w-32"
+                    step="0.01"
+                  />
+                ) : (
+                  <span className="text-lg font-semibold">{permitCost.toFixed(2)}</span>
+                )}
+              </div>
+            </div>
+            <div className="flex gap-2">
+              {editingPermitCost ? (
+                <>
+                  <Button onClick={updatePermitCost} size="sm">
+                    Save
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setEditingPermitCost(false);
+                      fetchPermitCost();
+                    }}
+                    variant="outline"
+                    size="sm"
+                  >
+                    Cancel
+                  </Button>
+                </>
+              ) : (
+                <Button onClick={() => setEditingPermitCost(true)} size="sm" variant="outline">
+                  <Pencil className="mr-2 h-4 w-4" />
+                  Edit
+                </Button>
+              )}
+            </div>
+          </div>
+        </Card>
 
         <div className="border rounded-lg">
           <Table>
