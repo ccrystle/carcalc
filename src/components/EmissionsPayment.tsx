@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface EmissionsPaymentProps {
   emissions: number; // US tons
@@ -12,6 +13,7 @@ interface EmissionsPaymentProps {
 export const EmissionsPayment = ({ emissions }: EmissionsPaymentProps) => {
   const [loading, setLoading] = useState(false);
   const [permitCost, setPermitCost] = useState<number>(25);
+  const [paymentType, setPaymentType] = useState<"one-time" | "subscription">("one-time");
 
   useEffect(() => {
     fetchPermitCost();
@@ -40,6 +42,9 @@ export const EmissionsPayment = ({ emissions }: EmissionsPaymentProps) => {
   
   // Add 10% fee
   const totalCost = baseCost * 1.1;
+  
+  // Monthly cost (1/12th of total)
+  const monthlyCost = totalCost / 12;
 
   const handlePayment = async () => {
     setLoading(true);
@@ -57,6 +62,7 @@ export const EmissionsPayment = ({ emissions }: EmissionsPaymentProps) => {
           metricTons,
           baseCost,
           totalCost,
+          paymentType,
         },
       });
 
@@ -79,36 +85,69 @@ export const EmissionsPayment = ({ emissions }: EmissionsPaymentProps) => {
         Offset Your Carbon Emissions
       </h3>
       
-      <div className="mb-6 space-y-3 rounded-lg bg-background/50 p-4">
-        <div className="flex justify-between text-sm">
-          <span className="text-muted-foreground">US Tons:</span>
-          <span className="font-medium">{emissions.toFixed(2)} tons</span>
-        </div>
-        <div className="flex justify-between text-sm">
-          <span className="text-muted-foreground">Metric Tons:</span>
-          <span className="font-medium">{metricTons.toFixed(2)} metric tons</span>
-        </div>
-        <div className="flex justify-between text-sm">
-          <span className="text-muted-foreground">Cost per Metric Ton:</span>
-          <span className="font-medium">${permitCost.toFixed(2)}</span>
-        </div>
-        <div className="flex justify-between text-sm">
-          <span className="text-muted-foreground">Base Cost:</span>
-          <span className="font-medium">${baseCost.toFixed(2)}</span>
-        </div>
-        <div className="flex justify-between text-sm">
-          <span className="text-muted-foreground">Processing Fee (10%):</span>
-          <span className="font-medium">${(totalCost - baseCost).toFixed(2)}</span>
-        </div>
-        <div className="border-t pt-3">
-          <div className="flex justify-between">
-            <span className="font-semibold">Total:</span>
-            <span className="text-xl font-bold text-accent">
-              ${totalCost.toFixed(2)}
-            </span>
+      <Tabs value={paymentType} onValueChange={(v) => setPaymentType(v as "one-time" | "subscription")} className="mb-6">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="one-time">One-Time Payment</TabsTrigger>
+          <TabsTrigger value="subscription">Monthly Subscription</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="one-time" className="mt-4 space-y-3 rounded-lg bg-background/50 p-4">
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">US Tons:</span>
+            <span className="font-medium">{emissions.toFixed(2)} tons</span>
           </div>
-        </div>
-      </div>
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">Metric Tons:</span>
+            <span className="font-medium">{metricTons.toFixed(2)} metric tons</span>
+          </div>
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">Cost per Metric Ton:</span>
+            <span className="font-medium">${permitCost.toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">Base Cost:</span>
+            <span className="font-medium">${baseCost.toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">CO2 Neutralization (10%):</span>
+            <span className="font-medium">${(totalCost - baseCost).toFixed(2)}</span>
+          </div>
+          <div className="border-t pt-3">
+            <div className="flex justify-between">
+              <span className="font-semibold">Total (Annual):</span>
+              <span className="text-xl font-bold text-accent">
+                ${totalCost.toFixed(2)}
+              </span>
+            </div>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="subscription" className="mt-4 space-y-3 rounded-lg bg-background/50 p-4">
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">Annual Emissions:</span>
+            <span className="font-medium">{emissions.toFixed(2)} US tons</span>
+          </div>
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">Annual Total:</span>
+            <span className="font-medium">${totalCost.toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">Payment Frequency:</span>
+            <span className="font-medium">Monthly (12 payments)</span>
+          </div>
+          <div className="border-t pt-3">
+            <div className="flex justify-between">
+              <span className="font-semibold">Monthly Payment:</span>
+              <span className="text-xl font-bold text-accent">
+                ${monthlyCost.toFixed(2)}/mo
+              </span>
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Automatically renews each month to cover your ongoing emissions
+          </p>
+        </TabsContent>
+      </Tabs>
 
       <Button
         onClick={handlePayment}
@@ -121,8 +160,10 @@ export const EmissionsPayment = ({ emissions }: EmissionsPaymentProps) => {
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             Processing...
           </>
+        ) : paymentType === "one-time" ? (
+          "Purchase Annual Offset"
         ) : (
-          "Purchase Carbon Offset"
+          "Start Monthly Subscription"
         )}
       </Button>
       

@@ -27,7 +27,7 @@ serve(async (req) => {
       throw new Error("User not authenticated or email not available");
     }
 
-    const { metricTons, baseCost, totalCost } = await req.json();
+    const { metricTons, baseCost, totalCost, paymentType = "one-time" } = await req.json();
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
@@ -40,8 +40,11 @@ serve(async (req) => {
       customerId = customers.data[0].id;
     }
 
-    // Create checkout session with dynamic pricing
-    const session = await stripe.checkout.sessions.create({
+    // Determine mode and pricing based on payment type
+    const isSubscription = paymentType === "subscription";
+    const amount = isSubscription ? Math.round((totalCost / 12) * 100) : Math.round(totalCost * 100);
+    
+    const sessionConfig: any = {
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
       line_items: [
@@ -49,18 +52,27 @@ serve(async (req) => {
           price_data: {
             currency: "usd",
             product_data: {
-              name: "Carbon Offset Credits",
-              description: `Offset ${metricTons.toFixed(2)} metric tons of CO₂ emissions`,
+              name: isSubscription ? "Monthly Carbon Offset Subscription" : "Annual Carbon Offset Credits",
+              description: isSubscription 
+                ? `Monthly subscription to offset ${metricTons.toFixed(2)} metric tons of CO₂ annually`
+                : `One-time payment to offset ${metricTons.toFixed(2)} metric tons of CO₂ emissions`,
             },
-            unit_amount: Math.round(totalCost * 100), // Convert to cents
+            unit_amount: amount,
+            ...(isSubscription && {
+              recurring: {
+                interval: "month",
+              },
+            }),
           },
           quantity: 1,
         },
       ],
-      mode: "payment",
+      mode: isSubscription ? "subscription" : "payment",
       success_url: `${req.headers.get("origin")}/?payment=success`,
       cancel_url: `${req.headers.get("origin")}/?payment=cancelled`,
-    });
+    };
+
+    const session = await stripe.checkout.sessions.create(sessionConfig);
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
