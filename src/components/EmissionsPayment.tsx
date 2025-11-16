@@ -85,68 +85,51 @@ export const EmissionsPayment = ({ emissions }: EmissionsPaymentProps) => {
         Offset Your Carbon Emissions
       </h3>
       
+      <div className="mb-6 space-y-3 rounded-lg bg-background/50 p-4">
+        <div className="flex justify-between text-sm">
+          <span className="text-muted-foreground">US Tons:</span>
+          <span className="font-medium">{emissions.toFixed(2)} tons</span>
+        </div>
+        <div className="flex justify-between text-sm">
+          <span className="text-muted-foreground">Metric Tons:</span>
+          <span className="font-medium">{metricTons.toFixed(2)} metric tons</span>
+        </div>
+        <div className="flex justify-between text-sm">
+          <span className="text-muted-foreground">Cost per Metric Ton:</span>
+          <span className="font-medium">${permitCost.toFixed(2)}</span>
+        </div>
+        <div className="flex justify-between text-sm">
+          <span className="text-muted-foreground">Base Cost:</span>
+          <span className="font-medium">${baseCost.toFixed(2)}</span>
+        </div>
+        <div className="flex justify-between text-sm">
+          <span className="text-muted-foreground">CO2 Neutralization (10%):</span>
+          <span className="font-medium">${(totalCost - baseCost).toFixed(2)}</span>
+        </div>
+        <div className="border-t pt-3">
+          <div className="flex justify-between">
+            <span className="font-semibold">
+              {paymentType === "one-time" ? "Total (Annual):" : "Monthly Payment:"}
+            </span>
+            <span className="text-xl font-bold text-accent">
+              {paymentType === "one-time" 
+                ? `$${totalCost.toFixed(2)}` 
+                : `$${monthlyCost.toFixed(2)}/mo`}
+            </span>
+          </div>
+        </div>
+        {paymentType === "subscription" && (
+          <p className="text-xs text-muted-foreground">
+            Annual total: ${totalCost.toFixed(2)} (12 monthly payments)
+          </p>
+        )}
+      </div>
+
       <Tabs value={paymentType} onValueChange={(v) => setPaymentType(v as "one-time" | "subscription")} className="mb-6">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="one-time">One-Time Payment</TabsTrigger>
           <TabsTrigger value="subscription">Monthly Subscription</TabsTrigger>
         </TabsList>
-        
-        <TabsContent value="one-time" className="mt-4 space-y-3 rounded-lg bg-background/50 p-4">
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">US Tons:</span>
-            <span className="font-medium">{emissions.toFixed(2)} tons</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Metric Tons:</span>
-            <span className="font-medium">{metricTons.toFixed(2)} metric tons</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Cost per Metric Ton:</span>
-            <span className="font-medium">${permitCost.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Base Cost:</span>
-            <span className="font-medium">${baseCost.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">CO2 Neutralization (10%):</span>
-            <span className="font-medium">${(totalCost - baseCost).toFixed(2)}</span>
-          </div>
-          <div className="border-t pt-3">
-            <div className="flex justify-between">
-              <span className="font-semibold">Total (Annual):</span>
-              <span className="text-xl font-bold text-accent">
-                ${totalCost.toFixed(2)}
-              </span>
-            </div>
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="subscription" className="mt-4 space-y-3 rounded-lg bg-background/50 p-4">
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Annual Emissions:</span>
-            <span className="font-medium">{emissions.toFixed(2)} US tons</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Annual Total:</span>
-            <span className="font-medium">${totalCost.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Payment Frequency:</span>
-            <span className="font-medium">Monthly (12 payments)</span>
-          </div>
-          <div className="border-t pt-3">
-            <div className="flex justify-between">
-              <span className="font-semibold">Monthly Payment:</span>
-              <span className="text-xl font-bold text-accent">
-                ${monthlyCost.toFixed(2)}/mo
-              </span>
-            </div>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            Automatically renews each month to cover your ongoing emissions
-          </p>
-        </TabsContent>
       </Tabs>
 
       <Button
