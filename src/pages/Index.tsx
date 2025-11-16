@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,8 +8,12 @@ import { VehicleSelector } from "@/components/VehicleSelector";
 import { EmissionsResult } from "@/components/EmissionsResult";
 import { EmissionsPayment } from "@/components/EmissionsPayment";
 import { Leaf } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { toast } = useToast();
   const [selectedVehicle, setSelectedVehicle] = useState<{
     year: number;
     make: string;
@@ -18,6 +22,47 @@ const Index = () => {
   } | null>(null);
   const [annualMiles, setAnnualMiles] = useState("12000");
   const [emissions, setEmissions] = useState<number | null>(null);
+
+  useEffect(() => {
+    const paymentStatus = searchParams.get("payment");
+    if (paymentStatus === "success") {
+      const metricTons = sessionStorage.getItem("payment_metric_tons");
+      const totalCost = sessionStorage.getItem("payment_total_cost");
+      const paymentType = sessionStorage.getItem("payment_type");
+
+      if (metricTons && totalCost && paymentType) {
+        sendReceipt(
+          parseFloat(metricTons),
+          parseFloat(totalCost),
+          paymentType
+        );
+        sessionStorage.removeItem("payment_metric_tons");
+        sessionStorage.removeItem("payment_total_cost");
+        sessionStorage.removeItem("payment_type");
+      }
+      
+      searchParams.delete("payment");
+      setSearchParams(searchParams);
+    }
+  }, [searchParams, setSearchParams]);
+
+  const sendReceipt = async (metricTons: number, totalCost: number, paymentType: string) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      await supabase.functions.invoke("send-payment-receipt", {
+        body: { metricTons, totalCost, paymentType },
+      });
+
+      toast({
+        title: "Receipt Sent!",
+        description: "A confirmation email has been sent to your inbox.",
+      });
+    } catch (error) {
+      console.error("Error sending receipt:", error);
+    }
+  };
 
   const calculateEmissions = () => {
     if (selectedVehicle && annualMiles) {

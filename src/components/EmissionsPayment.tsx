@@ -69,6 +69,11 @@ export const EmissionsPayment = ({ emissions }: EmissionsPaymentProps) => {
       if (error) throw error;
 
       if (data?.url) {
+        // Store payment info for receipt email
+        sessionStorage.setItem("payment_metric_tons", metricTons.toString());
+        sessionStorage.setItem("payment_total_cost", totalCost.toString());
+        sessionStorage.setItem("payment_type", paymentType);
+        
         window.open(data.url, "_blank");
       }
     } catch (error) {
