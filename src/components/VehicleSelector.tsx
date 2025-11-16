@@ -169,7 +169,7 @@ export const VehicleSelector = ({ onVehicleSelect, isAdmin }: VehicleSelectorPro
           isAdmin={isAdmin}
         />
         <Select value={selectedYear} onValueChange={setSelectedYear}>
-          <SelectTrigger id="year" className="h-12">
+          <SelectTrigger id="year" className="h-12 bg-gray-900 border-gray-700 text-white">
             <SelectValue placeholder="Select year" />
           </SelectTrigger>
           <SelectContent>
@@ -196,7 +196,7 @@ export const VehicleSelector = ({ onVehicleSelect, isAdmin }: VehicleSelectorPro
           onValueChange={setSelectedMake}
           disabled={!selectedYear}
         >
-          <SelectTrigger id="make" className="h-12">
+          <SelectTrigger id="make" className="h-12 bg-gray-900 border-gray-700 text-white">
             <SelectValue placeholder="Select make" />
           </SelectTrigger>
           <SelectContent>
@@ -223,7 +223,7 @@ export const VehicleSelector = ({ onVehicleSelect, isAdmin }: VehicleSelectorPro
           onValueChange={setSelectedModel}
           disabled={!selectedMake}
         >
-          <SelectTrigger id="model" className="h-12">
+          <SelectTrigger id="model" className="h-12 bg-gray-900 border-gray-700 text-white">
             <SelectValue placeholder="Select model" />
           </SelectTrigger>
           <SelectContent>
