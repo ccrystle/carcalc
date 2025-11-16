@@ -7,7 +7,7 @@ interface EditableTextProps {
   contentKey: string;
   defaultContent: string;
   className?: string;
-  as?: "h1" | "h2" | "p" | "div";
+  as?: "h1" | "h2" | "p" | "div" | "span";
   isAdmin: boolean;
 }
 
