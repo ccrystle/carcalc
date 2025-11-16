@@ -78,6 +78,14 @@ export const EmissionsResult = ({
                 {emissions.toFixed(2)} tons CO₂
               </td>
             </tr>
+            <tr>
+              <td className="text-right text-muted-foreground pr-4 py-1.5 align-top whitespace-nowrap">
+                CO₂ emitted per mile driven:
+              </td>
+              <td className="text-foreground font-mono py-1.5">
+                {((gallonsConsumed * 19.6) / annualMiles).toFixed(3)} lbs CO₂/mile
+              </td>
+            </tr>
           </tbody>
         </table>
       </div>
