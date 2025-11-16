@@ -8,7 +8,7 @@ import { VehicleSelector } from "@/components/VehicleSelector";
 import { EmissionsResult } from "@/components/EmissionsResult";
 import { EmissionsPayment } from "@/components/EmissionsPayment";
 import { EditableText } from "@/components/EditableText";
-import { Leaf } from "lucide-react";
+import { Leaf, Pencil } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -97,14 +97,30 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background px-4 py-8 sm:py-12">
       <div className="mx-auto max-w-2xl">
-        {/* Admin Login Link */}
-        <div className="mb-4 text-right">
-          <Link to="/auth">
-            <Button variant="outline" size="sm">
-              Admin Login
-            </Button>
-          </Link>
-        </div>
+        {/* Admin Toolbar */}
+        {isAdmin ? (
+          <div className="mb-4 flex items-center justify-between rounded-lg border border-primary/20 bg-primary/5 px-4 py-3">
+            <div className="flex items-center gap-2">
+              <Pencil className="h-4 w-4 text-primary" />
+              <span className="text-sm font-medium text-foreground">
+                Edit Mode Active - Hover over text to edit
+              </span>
+            </div>
+            <Link to="/admin">
+              <Button variant="outline" size="sm">
+                Admin Panel
+              </Button>
+            </Link>
+          </div>
+        ) : (
+          <div className="mb-4 text-right">
+            <Link to="/auth">
+              <Button variant="outline" size="sm">
+                Admin Login
+              </Button>
+            </Link>
+          </div>
+        )}
         {/* Header */}
         <div className="mb-12 text-center">
           <div className="mb-4 inline-flex items-center justify-center rounded-full bg-accent/10 p-3">
