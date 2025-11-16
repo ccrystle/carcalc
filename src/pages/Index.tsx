@@ -133,12 +133,20 @@ const Index = () => {
             as="div"
             isAdmin={isAdmin}
           />
-          <h1 className="text-6xl font-bold text-foreground sm:text-7xl">
-            19.6 lbs
-          </h1>
-          <p className="mt-2 text-2xl font-medium text-muted-foreground">
-            of CO₂
-          </p>
+          <EditableText
+            contentKey="home_hero_number"
+            defaultContent="19.6 lbs"
+            className="text-6xl font-bold text-foreground sm:text-7xl"
+            as="h1"
+            isAdmin={isAdmin}
+          />
+          <EditableText
+            contentKey="home_hero_subtitle"
+            defaultContent="of CO₂"
+            className="mt-2 text-2xl font-medium text-muted-foreground"
+            as="p"
+            isAdmin={isAdmin}
+          />
         </div>
 
         {/* Main Card */}
@@ -170,9 +178,13 @@ const Index = () => {
 
               {/* Annual Miles Input */}
               <div className="space-y-2">
-                <Label htmlFor="miles" className="text-sm font-medium">
-                  Estimated Annual Miles
-                </Label>
+                <EditableText
+                  contentKey="home_miles_label"
+                  defaultContent="Estimated Annual Miles"
+                  className="text-sm font-medium"
+                  as="div"
+                  isAdmin={isAdmin}
+                />
                 <Input
                   id="miles"
                   type="number"
@@ -193,7 +205,13 @@ const Index = () => {
                 className="h-12 w-full text-lg font-medium"
                 size="lg"
               >
-                Calculate Emissions
+                <EditableText
+                  contentKey="home_calculate_button"
+                  defaultContent="Calculate Emissions"
+                  className="inline"
+                  as="div"
+                  isAdmin={isAdmin}
+                />
               </Button>
             </div>
           </div>
