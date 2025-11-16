@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { EditableText } from "@/components/EditableText";
 
 interface VehicleSelectorProps {
   onVehicleSelect: (vehicle: {
@@ -17,9 +18,10 @@ interface VehicleSelectorProps {
     model: string;
     mpgCombined: number;
   }) => void;
+  isAdmin: boolean;
 }
 
-export const VehicleSelector = ({ onVehicleSelect }: VehicleSelectorProps) => {
+export const VehicleSelector = ({ onVehicleSelect, isAdmin }: VehicleSelectorProps) => {
   const [years, setYears] = useState<number[]>([]);
   const [makes, setMakes] = useState<string[]>([]);
   const [models, setModels] = useState<
@@ -159,9 +161,13 @@ export const VehicleSelector = ({ onVehicleSelect }: VehicleSelectorProps) => {
     <div className="space-y-4">
       {/* Year Selector */}
       <div className="space-y-2">
-        <Label htmlFor="year" className="text-sm font-medium">
-          Year
-        </Label>
+        <EditableText
+          contentKey="vehicle_year_label"
+          defaultContent="Year"
+          className="text-sm font-medium"
+          as="div"
+          isAdmin={isAdmin}
+        />
         <Select value={selectedYear} onValueChange={setSelectedYear}>
           <SelectTrigger id="year" className="h-12">
             <SelectValue placeholder="Select year" />
@@ -178,9 +184,13 @@ export const VehicleSelector = ({ onVehicleSelect }: VehicleSelectorProps) => {
 
       {/* Make Selector */}
       <div className="space-y-2">
-        <Label htmlFor="make" className="text-sm font-medium">
-          Make
-        </Label>
+        <EditableText
+          contentKey="vehicle_make_label"
+          defaultContent="Make"
+          className="text-sm font-medium"
+          as="div"
+          isAdmin={isAdmin}
+        />
         <Select
           value={selectedMake}
           onValueChange={setSelectedMake}
@@ -201,9 +211,13 @@ export const VehicleSelector = ({ onVehicleSelect }: VehicleSelectorProps) => {
 
       {/* Model Selector */}
       <div className="space-y-2">
-        <Label htmlFor="model" className="text-sm font-medium">
-          Model
-        </Label>
+        <EditableText
+          contentKey="vehicle_model_label"
+          defaultContent="Model"
+          className="text-sm font-medium"
+          as="div"
+          isAdmin={isAdmin}
+        />
         <Select
           value={selectedModel}
           onValueChange={setSelectedModel}
