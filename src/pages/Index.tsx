@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { VehicleSelector } from "@/components/VehicleSelector";
 import { EmissionsResult } from "@/components/EmissionsResult";
 import { EmissionsPayment } from "@/components/EmissionsPayment";
+import { EditableText } from "@/components/EditableText";
 import { Leaf } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -22,6 +23,25 @@ const Index = () => {
   } | null>(null);
   const [annualMiles, setAnnualMiles] = useState("12000");
   const [emissions, setEmissions] = useState<number | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    checkAdminStatus();
+  }, []);
+
+  const checkAdminStatus = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+
+    const { data } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", session.user.id)
+      .eq("role", "admin")
+      .single();
+
+    setIsAdmin(!!data);
+  };
 
   useEffect(() => {
     const paymentStatus = searchParams.get("payment");
@@ -90,9 +110,13 @@ const Index = () => {
           <div className="mb-4 inline-flex items-center justify-center rounded-full bg-accent/10 p-3">
             <Leaf className="h-8 w-8 text-accent" />
           </div>
-          <div className="mb-2 text-sm font-medium uppercase tracking-wide text-muted-foreground">
-            Wow! Each gallon of gas we burn
-          </div>
+          <EditableText
+            contentKey="home_fact"
+            defaultContent="The average passenger vehicle emits about 4.6 metric tons of CO₂ per year"
+            className="mb-2 text-sm font-medium uppercase tracking-wide text-muted-foreground"
+            as="div"
+            isAdmin={isAdmin}
+          />
           <h1 className="text-6xl font-bold text-foreground sm:text-7xl">
             19.6 lbs
           </h1>
@@ -104,9 +128,20 @@ const Index = () => {
         {/* Main Card */}
         <Card className="overflow-hidden border-0 bg-card shadow-medium">
           <div className="p-6 sm:p-8">
-            <h2 className="mb-6 text-2xl font-semibold text-foreground">
-              Calculate Your Car's Annual Emissions
-            </h2>
+            <EditableText
+              contentKey="home_title"
+              defaultContent="Calculate Your Car's CO₂ Emissions"
+              className="mb-2 text-2xl font-semibold text-foreground"
+              as="h2"
+              isAdmin={isAdmin}
+            />
+            <EditableText
+              contentKey="home_subtitle"
+              defaultContent="Understanding your vehicle's environmental impact is the first step toward making informed decisions about carbon offsetting and sustainable transportation."
+              className="mb-6 text-sm text-muted-foreground"
+              as="p"
+              isAdmin={isAdmin}
+            />
 
             <div className="space-y-6">
               {/* Vehicle Selector */}
@@ -163,9 +198,13 @@ const Index = () => {
         )}
 
         {/* Footer Note */}
-        <p className="mt-8 text-center text-sm text-muted-foreground">
-          Data sourced from EPA fuel economy standards
-        </p>
+        <EditableText
+          contentKey="home_footer"
+          defaultContent="Vehicle data from EPA FuelEconomy.gov"
+          className="mt-8 text-center text-sm text-muted-foreground"
+          as="p"
+          isAdmin={isAdmin}
+        />
       </div>
     </div>
   );
