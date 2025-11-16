@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { VehicleSelector } from "@/components/VehicleSelector";
 import { EmissionsResult } from "@/components/EmissionsResult";
+import { EmissionsPayment } from "@/components/EmissionsPayment";
 import { Leaf } from "lucide-react";
 
 const Index = () => {
@@ -110,6 +111,11 @@ const Index = () => {
             />
           )}
         </Card>
+
+        {/* Payment Section */}
+        {emissions !== null && (
+          <EmissionsPayment emissions={emissions} />
+        )}
 
         {/* Footer Note */}
         <p className="mt-8 text-center text-sm text-muted-foreground">
