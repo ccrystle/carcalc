@@ -174,6 +174,7 @@ const Index = () => {
                   setSelectedVehicle(vehicle);
                   setEmissions(null);
                 }}
+                isAdmin={isAdmin}
               />
 
               {/* Annual Miles Input */}
@@ -222,13 +223,14 @@ const Index = () => {
               emissions={emissions}
               vehicle={selectedVehicle}
               annualMiles={parseFloat(annualMiles)}
+              isAdmin={isAdmin}
             />
           )}
         </Card>
 
         {/* Payment Section */}
         {emissions !== null && (
-          <EmissionsPayment emissions={emissions} />
+          <EmissionsPayment emissions={emissions} isAdmin={isAdmin} />
         )}
 
         {/* Footer Note */}

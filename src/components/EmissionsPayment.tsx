@@ -5,12 +5,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { EditableText } from "@/components/EditableText";
 
 interface EmissionsPaymentProps {
   emissions: number; // US tons
+  isAdmin: boolean;
 }
 
-export const EmissionsPayment = ({ emissions }: EmissionsPaymentProps) => {
+export const EmissionsPayment = ({ emissions, isAdmin }: EmissionsPaymentProps) => {
   const [loading, setLoading] = useState(false);
   const [permitCost, setPermitCost] = useState<number>(25);
   const [paymentType, setPaymentType] = useState<"one-time" | "subscription">("one-time");
@@ -86,9 +88,13 @@ export const EmissionsPayment = ({ emissions }: EmissionsPaymentProps) => {
 
   return (
     <Card className="mt-6 border-accent/20 bg-accent/5 p-6">
-      <h3 className="mb-4 text-xl font-semibold text-foreground">
-        Offset Your Carbon Emissions
-      </h3>
+      <EditableText
+        contentKey="payment_title"
+        defaultContent="Offset Your Carbon Emissions"
+        className="mb-4 text-xl font-semibold text-foreground"
+        as="h2"
+        isAdmin={isAdmin}
+      />
       
       <div className="mb-6 space-y-3 rounded-lg bg-background/50 p-4">
         <div className="flex justify-between text-sm">
