@@ -68,7 +68,7 @@ export const EditableText = ({
   };
 
   if (!isAdmin) {
-    return <Component className={className}>{content}</Component>;
+    return <Component className={`${className} whitespace-pre-line`}>{content}</Component>;
   }
 
   if (isEditing) {
@@ -111,7 +111,7 @@ export const EditableText = ({
 
   return (
     <div className="group relative">
-      <Component className={className}>{content}</Component>
+      <Component className={`${className} whitespace-pre-line`}>{content}</Component>
       <button
         onClick={() => setIsEditing(true)}
         className="absolute -right-8 top-0 opacity-0 transition-opacity group-hover:opacity-100"
