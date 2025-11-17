@@ -112,7 +112,7 @@ export const EditableText = ({
   return (
     <div className="group relative inline-block">
       <Component 
-        className={`${className} whitespace-pre-line border-2 border-dashed border-primary/30 hover:border-primary/60 transition-colors cursor-pointer rounded px-2 py-1 bg-primary/5 hover:bg-primary/10`}
+        className={`${className} whitespace-pre-line border-2 border-dashed border-primary/30 hover:border-primary/60 transition-colors cursor-pointer rounded px-2 py-1 bg-primary/20 hover:bg-primary/30`}
         onClick={() => setIsEditing(true)}
       >
         {content}
