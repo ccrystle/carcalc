@@ -110,14 +110,19 @@ export const EditableText = ({
   }
 
   return (
-    <div className="group relative">
-      <Component className={`${className} whitespace-pre-line`}>{content}</Component>
+    <div className="group relative inline-block">
+      <Component 
+        className={`${className} whitespace-pre-line border-2 border-dashed border-primary/30 hover:border-primary/60 transition-colors cursor-pointer rounded px-2 py-1 bg-primary/5 hover:bg-primary/10`}
+        onClick={() => setIsEditing(true)}
+      >
+        {content}
+      </Component>
       <button
         onClick={() => setIsEditing(true)}
-        className="absolute -right-8 top-0 opacity-0 transition-opacity group-hover:opacity-100"
+        className="absolute -right-6 top-0 opacity-70 hover:opacity-100 transition-opacity"
         title="Edit this text"
       >
-        <Pencil className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+        <Pencil className="h-3 w-3 text-primary" />
       </button>
     </div>
   );
