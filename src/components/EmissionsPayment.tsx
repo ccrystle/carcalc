@@ -6,6 +6,8 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EditableText } from "@/components/EditableText";
+import { Slider } from "@/components/ui/slider";
+import { Label } from "@/components/ui/label";
 
 interface EmissionsPaymentProps {
   emissions: number; // US tons
@@ -16,6 +18,7 @@ export const EmissionsPayment = ({ emissions, isAdmin }: EmissionsPaymentProps) 
   const [loading, setLoading] = useState(false);
   const [permitCost, setPermitCost] = useState<number>(25);
   const [paymentType, setPaymentType] = useState<"one-time" | "subscription">("one-time");
+  const [offsetPercentage, setOffsetPercentage] = useState(100);
 
   useEffect(() => {
     fetchPermitCost();
@@ -37,7 +40,7 @@ export const EmissionsPayment = ({ emissions, isAdmin }: EmissionsPaymentProps) 
   };
 
   // Convert US tons to metric tons (1 US ton = 0.907185 metric tons)
-  const metricTons = emissions * 0.907185;
+  const metricTons = emissions * 0.907185 * (offsetPercentage / 100);
   
   // Calculate base cost
   const baseCost = metricTons * permitCost;
@@ -96,10 +99,33 @@ export const EmissionsPayment = ({ emissions, isAdmin }: EmissionsPaymentProps) 
         isAdmin={isAdmin}
       />
       
+      <div className="mb-6 space-y-4">
+        <div>
+          <Label className="mb-3 block text-sm font-medium">
+            Offset Amount: {offsetPercentage}% of your emissions
+          </Label>
+          <Slider
+            value={[offsetPercentage]}
+            onValueChange={(value) => setOffsetPercentage(value[0])}
+            min={10}
+            max={100}
+            step={10}
+            className="w-full"
+          />
+          <div className="mt-2 flex justify-between text-xs text-muted-foreground">
+            <span>10%</span>
+            <span>25%</span>
+            <span>50%</span>
+            <span>75%</span>
+            <span>100%</span>
+          </div>
+        </div>
+      </div>
+
       <div className="mb-6 space-y-3 rounded-lg bg-background/50 p-4">
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">US Tons:</span>
-          <span className="font-medium">{emissions.toFixed(2)} tons</span>
+          <span className="font-medium">{emissions.toFixed(2)} tons ({offsetPercentage}%)</span>
         </div>
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Metric Tons:</span>
