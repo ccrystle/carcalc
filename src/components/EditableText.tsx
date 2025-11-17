@@ -79,14 +79,14 @@ export const EditableText = ({
             type="text"
             value={editValue}
             onChange={(e) => setEditValue(e.target.value)}
-            className={`${className} w-full border-2 border-primary bg-background px-2 outline-none`}
+            className={`${className} w-full border-2 border-primary bg-primary/80 text-primary-foreground px-2 outline-none`}
             autoFocus
           />
         ) : (
           <textarea
             value={editValue}
             onChange={(e) => setEditValue(e.target.value)}
-            className={`${className} w-full border-2 border-primary bg-background px-2 outline-none`}
+            className={`${className} w-full border-2 border-primary bg-primary/80 text-primary-foreground px-2 outline-none`}
             autoFocus
             rows={3}
           />
