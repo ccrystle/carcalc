@@ -101,19 +101,25 @@ export const EmissionsPayment = ({ emissions, isAdmin }: EmissionsPaymentProps) 
       
       <div className="mb-6 space-y-4">
         <div>
-          <Label className="mb-3 block text-sm font-medium">
-            Offset Amount: {offsetPercentage}% of your emissions
-          </Label>
+          <div className="mb-3">
+            <EditableText
+              contentKey="offset_amount_label"
+              defaultContent={`Offset Amount: ${offsetPercentage}% of your emissions`}
+              className="text-sm font-medium"
+              as="div"
+              isAdmin={isAdmin}
+            />
+          </div>
           <Slider
             value={[offsetPercentage]}
             onValueChange={(value) => setOffsetPercentage(value[0])}
-            min={10}
+            min={0}
             max={100}
             step={10}
             className="w-full"
           />
           <div className="mt-2 flex justify-between text-xs text-muted-foreground">
-            <span>10%</span>
+            <span>0%</span>
             <span>50%</span>
             <span>100%</span>
           </div>
@@ -122,30 +128,64 @@ export const EmissionsPayment = ({ emissions, isAdmin }: EmissionsPaymentProps) 
 
       <div className="mb-6 space-y-3 rounded-lg bg-background/50 p-4">
         <div className="flex justify-between text-sm">
-          <span className="text-muted-foreground">US Tons:</span>
+          <EditableText
+            contentKey="us_tons_label"
+            defaultContent="US Tons:"
+            className="text-muted-foreground"
+            as="span"
+            isAdmin={isAdmin}
+          />
           <span className="font-medium">{emissions.toFixed(2)} tons ({offsetPercentage}%)</span>
         </div>
         <div className="flex justify-between text-sm">
-          <span className="text-muted-foreground">Metric Tons:</span>
+          <EditableText
+            contentKey="metric_tons_label"
+            defaultContent="Metric Tons:"
+            className="text-muted-foreground"
+            as="span"
+            isAdmin={isAdmin}
+          />
           <span className="font-medium">{metricTons.toFixed(2)} metric tons</span>
         </div>
         <div className="flex justify-between text-sm">
-          <span className="text-muted-foreground">Cost per Metric Ton:</span>
+          <EditableText
+            contentKey="cost_per_ton_label"
+            defaultContent="Cost per Metric Ton:"
+            className="text-muted-foreground"
+            as="span"
+            isAdmin={isAdmin}
+          />
           <span className="font-medium">${permitCost.toFixed(2)}</span>
         </div>
         <div className="flex justify-between text-sm">
-          <span className="text-muted-foreground">Base Cost:</span>
+          <EditableText
+            contentKey="base_cost_label"
+            defaultContent="Base Cost:"
+            className="text-muted-foreground"
+            as="span"
+            isAdmin={isAdmin}
+          />
           <span className="font-medium">${baseCost.toFixed(2)}</span>
         </div>
         <div className="flex justify-between text-sm">
-          <span className="text-muted-foreground">CO2 Neutralization (10%):</span>
+          <EditableText
+            contentKey="neutralization_fee_label"
+            defaultContent="CO2 Neutralization (10%):"
+            className="text-muted-foreground"
+            as="span"
+            isAdmin={isAdmin}
+          />
           <span className="font-medium">${(totalCost - baseCost).toFixed(2)}</span>
         </div>
         <div className="border-t pt-3">
           <div className="flex justify-between">
-            <span className="font-semibold">
-              {paymentType === "one-time" ? "Total (Annual):" : "Monthly Payment:"}
-            </span>
+            <EditableText
+              contentKey="total_label"
+              defaultContent={paymentType === "one-time" ? "Total (Annual):" : "Monthly Payment:"}
+              className="font-semibold"
+              as="span"
+              isAdmin={isAdmin}
+            />
             <span className="text-xl font-bold text-accent">
               {paymentType === "one-time" 
                 ? `$${totalCost.toFixed(2)}` 
@@ -154,9 +194,13 @@ export const EmissionsPayment = ({ emissions, isAdmin }: EmissionsPaymentProps) 
           </div>
         </div>
         {paymentType === "subscription" && (
-          <p className="text-xs text-muted-foreground">
-            Annual total: ${totalCost.toFixed(2)} (12 monthly payments)
-          </p>
+          <EditableText
+            contentKey="annual_total_note"
+            defaultContent={`Annual total: $${totalCost.toFixed(2)} (12 monthly payments)`}
+            className="text-xs text-muted-foreground"
+            as="p"
+            isAdmin={isAdmin}
+          />
         )}
       </div>
 
@@ -169,25 +213,47 @@ export const EmissionsPayment = ({ emissions, isAdmin }: EmissionsPaymentProps) 
 
       <Button
         onClick={handlePayment}
-        disabled={loading}
+        disabled={loading || offsetPercentage === 0}
         className="w-full"
         size="lg"
       >
         {loading ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Processing...
+            <EditableText
+              contentKey="processing_text"
+              defaultContent="Processing..."
+              className="inline"
+              as="span"
+              isAdmin={isAdmin}
+            />
           </>
         ) : paymentType === "one-time" ? (
-          "Purchase Annual Offset"
+          <EditableText
+            contentKey="purchase_button_text"
+            defaultContent="Purchase Annual Offset"
+            className="inline"
+            as="span"
+            isAdmin={isAdmin}
+          />
         ) : (
-          "Start Monthly Subscription"
+          <EditableText
+            contentKey="subscription_button_text"
+            defaultContent="Start Monthly Subscription"
+            className="inline"
+            as="span"
+            isAdmin={isAdmin}
+          />
         )}
       </Button>
       
-      <p className="mt-3 text-center text-xs text-muted-foreground">
-        Your payment supports verified carbon offset projects
-      </p>
+      <EditableText
+        contentKey="payment_footer_text"
+        defaultContent="Your payment supports verified carbon offset projects"
+        className="mt-3 text-center text-xs text-muted-foreground"
+        as="p"
+        isAdmin={isAdmin}
+      />
     </Card>
   );
 };
