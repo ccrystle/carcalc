@@ -102,13 +102,23 @@ const Index = () => {
           <div className="mb-4 flex items-center justify-between rounded-lg border border-primary/20 bg-primary/5 px-4 py-3">
             <div className="flex items-center gap-2">
               <Pencil className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium text-foreground">
-                Edit Mode Active - Hover over text to edit
-              </span>
+              <EditableText
+                contentKey="home_admin_toolbar_text"
+                defaultContent="Edit Mode Active - Hover over text to edit"
+                className="text-sm font-medium"
+                as="span"
+                isAdmin={isAdmin}
+              />
             </div>
             <Link to="/admin">
               <Button variant="outline" size="sm">
-                Admin Panel
+                <EditableText
+                  contentKey="home_admin_panel_button"
+                  defaultContent="Admin Panel"
+                  className="inline"
+                  as="span"
+                  isAdmin={isAdmin}
+                />
               </Button>
             </Link>
           </div>
@@ -116,7 +126,13 @@ const Index = () => {
           <div className="mb-4 text-right">
             <Link to="/auth">
               <Button variant="outline" size="sm">
-                Admin Login
+                <EditableText
+                  contentKey="home_admin_login_button"
+                  defaultContent="Admin Login"
+                  className="inline"
+                  as="span"
+                  isAdmin={isAdmin}
+                />
               </Button>
             </Link>
           </div>
