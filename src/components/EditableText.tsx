@@ -135,15 +135,15 @@ export const EditableText = ({
     <div className="group relative inline-block">
       <Component 
         className={`${className} whitespace-pre-line border-2 border-dashed border-primary/30 hover:border-primary/60 transition-colors cursor-pointer rounded px-2 py-1 bg-primary/20 hover:bg-primary/30`}
-        onClick={() => setIsEditing(true)}
+        onDoubleClick={() => setIsEditing(true)}
       >
         {content}
       </Component>
       <div className="absolute -right-12 top-0 flex gap-1">
         <button
-          onClick={() => setIsEditing(true)}
+          onDoubleClick={() => setIsEditing(true)}
           className="opacity-70 hover:opacity-100 transition-opacity"
-          title="Edit this text"
+          title="Double-click to edit"
         >
           <Pencil className="h-3 w-3 text-primary" />
         </button>
