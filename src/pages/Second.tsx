@@ -100,9 +100,16 @@ const Second = () => {
         <div className="mx-auto max-w-4xl text-center">
           <EditableText
             contentKey="second_hero_title"
-            defaultContent="Real Climate Action. Right Now."
-            className="text-5xl sm:text-7xl font-bold mb-6 bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent"
+            defaultContent="Take Climate Action"
+            className="text-5xl sm:text-7xl font-bold mb-2 bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent"
             as="h1"
+            isAdmin={isAdmin}
+          />
+          <EditableText
+            contentKey="second_hero_secondary_heading"
+            defaultContent="Right Now"
+            className="text-3xl sm:text-4xl font-semibold mb-6 text-gray-300"
+            as="h2"
             isAdmin={isAdmin}
           />
           <EditableText
