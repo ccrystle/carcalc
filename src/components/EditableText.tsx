@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Pencil } from "lucide-react";
+import { Pencil, X } from "lucide-react";
 
 interface EditableTextProps {
   contentKey: string;
@@ -67,6 +67,28 @@ export const EditableText = ({
     setIsEditing(false);
   };
 
+  const handleDelete = async () => {
+    const { error } = await supabase
+      .from("page_content")
+      .update({ content: defaultContent })
+      .eq("key", contentKey);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to reset content",
+        variant: "destructive",
+      });
+    } else {
+      setContent(defaultContent);
+      setEditValue(defaultContent);
+      toast({
+        title: "Success",
+        description: "Content reset to default",
+      });
+    }
+  };
+
   if (!isAdmin) {
     return <Component className={`${className} whitespace-pre-line`}>{content}</Component>;
   }
@@ -117,13 +139,22 @@ export const EditableText = ({
       >
         {content}
       </Component>
-      <button
-        onClick={() => setIsEditing(true)}
-        className="absolute -right-6 top-0 opacity-70 hover:opacity-100 transition-opacity"
-        title="Edit this text"
-      >
-        <Pencil className="h-3 w-3 text-primary" />
-      </button>
+      <div className="absolute -right-12 top-0 flex gap-1">
+        <button
+          onClick={() => setIsEditing(true)}
+          className="opacity-70 hover:opacity-100 transition-opacity"
+          title="Edit this text"
+        >
+          <Pencil className="h-3 w-3 text-primary" />
+        </button>
+        <button
+          onClick={handleDelete}
+          className="opacity-70 hover:opacity-100 transition-opacity"
+          title="Reset to default"
+        >
+          <X className="h-3 w-3 text-destructive" />
+        </button>
+      </div>
     </div>
   );
 };
