@@ -6,24 +6,8 @@ import { Label } from "@/components/ui/label";
 import { VehicleSelector } from "@/components/VehicleSelector";
 import { EmissionsPayment } from "@/components/EmissionsPayment";
 import { EditableText } from "@/components/EditableText";
-import { DraggableSection } from "@/components/DraggableSection";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  DragEndEvent,
-} from "@dnd-kit/core";
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
 
 const Second = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -37,21 +21,6 @@ const Second = () => {
   const [annualMiles, setAnnualMiles] = useState("12000");
   const [emissions, setEmissions] = useState<number | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [sectionOrder, setSectionOrder] = useState<string[]>([
-    "hero",
-    "co2-stat",
-    "what-you-can-do",
-    "calculator",
-    "why-now",
-    "final-cta",
-  ]);
-
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
 
   useEffect(() => {
     const checkAdminStatus = async () => {
@@ -67,50 +36,7 @@ const Second = () => {
       }
     };
     checkAdminStatus();
-    loadSectionOrder();
   }, []);
-
-  const loadSectionOrder = async () => {
-    const { data } = await supabase
-      .from("page_content")
-      .select("content")
-      .eq("key", "second_section_order")
-      .single();
-
-    if (data?.content) {
-      try {
-        const order = JSON.parse(data.content);
-        setSectionOrder(order);
-      } catch (e) {
-        console.error("Failed to parse section order:", e);
-      }
-    }
-  };
-
-  const handleDragEnd = async (event: DragEndEvent) => {
-    const { active, over } = event;
-
-    if (over && active.id !== over.id) {
-      const oldIndex = sectionOrder.indexOf(active.id as string);
-      const newIndex = sectionOrder.indexOf(over.id as string);
-
-      const newOrder = arrayMove(sectionOrder, oldIndex, newIndex);
-      setSectionOrder(newOrder);
-
-      // Save to database
-      await supabase
-        .from("page_content")
-        .upsert({
-          key: "second_section_order",
-          content: JSON.stringify(newOrder),
-        });
-
-      toast({
-        title: "Section order updated",
-        description: "The page layout has been reordered",
-      });
-    }
-  };
 
   useEffect(() => {
     const paymentStatus = searchParams.get("payment");
@@ -553,24 +479,14 @@ Take control while others look away."
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={handleDragEnd}
-      >
-        <SortableContext
-          items={sectionOrder}
-          strategy={verticalListSortingStrategy}
-        >
-          <div className={isAdmin ? "pl-12" : ""}>
-            {sectionOrder.map((sectionId) => (
-              <DraggableSection key={sectionId} id={sectionId} isAdmin={isAdmin}>
-                {sections[sectionId]}
-              </DraggableSection>
-            ))}
-          </div>
-        </SortableContext>
-      </DndContext>
+      <div className={isAdmin ? "pl-12" : ""}>
+        {sections["hero"]}
+        {sections["co2-stat"]}
+        {sections["what-you-can-do"]}
+        {sections["calculator"]}
+        {sections["why-now"]}
+        {sections["final-cta"]}
+      </div>
     </div>
   );
 };
