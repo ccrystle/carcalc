@@ -44,8 +44,7 @@ export const EditableText = ({
     e.stopPropagation();
     const { error } = await supabase
       .from("page_content")
-      .update({ content: editValue })
-      .eq("key", contentKey);
+      .upsert({ key: contentKey, content: editValue }, { onConflict: "key" });
 
     if (error) {
       toast({
@@ -72,8 +71,7 @@ export const EditableText = ({
   const handleDelete = async () => {
     const { error } = await supabase
       .from("page_content")
-      .update({ content: defaultContent })
-      .eq("key", contentKey);
+      .upsert({ key: contentKey, content: defaultContent }, { onConflict: "key" });
 
     if (error) {
       toast({
