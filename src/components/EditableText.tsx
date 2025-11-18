@@ -103,6 +103,8 @@ export const EditableText = ({
             type="text"
             value={editValue}
             onChange={(e) => setEditValue(e.target.value)}
+            onPointerDown={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
             className={`${className} w-full border-2 border-primary bg-primary/80 text-primary-foreground px-2 outline-none`}
             autoFocus
           />
@@ -110,6 +112,8 @@ export const EditableText = ({
           <textarea
             value={editValue}
             onChange={(e) => setEditValue(e.target.value)}
+            onPointerDown={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
             className={`${className} w-full border-2 border-primary bg-primary/80 text-primary-foreground px-2 outline-none`}
             autoFocus
             rows={3}
