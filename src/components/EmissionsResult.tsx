@@ -90,6 +90,43 @@ export const EmissionsResult = ({
         </table>
       </div>
 
+      <div className="rounded-lg bg-muted/50 p-4 mb-4">
+        <div className="text-xs font-medium text-muted-foreground mb-3">
+          Chemical Process:
+        </div>
+        <table className="w-full text-sm mb-3">
+          <tbody>
+            <tr>
+              <td className="text-right text-muted-foreground pr-4 py-1.5 whitespace-nowrap">
+                1 carbon molecule:
+              </td>
+              <td className="text-center text-foreground font-mono py-1.5">
+                C
+              </td>
+            </tr>
+            <tr>
+              <td className="text-right text-muted-foreground pr-4 py-1.5 whitespace-nowrap">
+                combines with 2 oxygen molecules:
+              </td>
+              <td className="text-center text-foreground font-mono py-1.5">
+                OO
+              </td>
+            </tr>
+            <tr>
+              <td className="text-right text-muted-foreground pr-4 py-1.5 whitespace-nowrap">
+                to get:
+              </td>
+              <td className="text-center text-foreground font-mono py-1.5 font-semibold">
+                CO₂
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div className="text-xs text-muted-foreground italic text-center">
+          So we're actually reducing the Oxygen we need to breathe!
+        </div>
+      </div>
+
       <div className="space-y-3 text-sm">
         <div className="flex justify-between">
           <span className="text-muted-foreground">Vehicle</span>
