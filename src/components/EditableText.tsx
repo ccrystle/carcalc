@@ -40,7 +40,8 @@ export const EditableText = ({
     }
   };
 
-  const handleSave = async () => {
+  const handleSave = async (e: React.MouseEvent) => {
+    e.stopPropagation();
     const { error } = await supabase
       .from("page_content")
       .update({ content: editValue })
@@ -62,7 +63,8 @@ export const EditableText = ({
     }
   };
 
-  const handleCancel = () => {
+  const handleCancel = (e: React.MouseEvent) => {
+    e.stopPropagation();
     setEditValue(content);
     setIsEditing(false);
   };
