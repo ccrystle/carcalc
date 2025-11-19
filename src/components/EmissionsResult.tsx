@@ -91,11 +91,13 @@ export const EmissionsResult = ({
       </div>
 
       <div className="rounded-lg bg-muted/50 p-4 mb-4">
-        <div className="text-xs font-medium text-muted-foreground mb-3">
-          i didn't know
-        </div>
-        <div className="text-xs text-muted-foreground italic text-center mb-3">
-          it's kind of amazing
+        <div className="mb-3">
+          <div className="text-xs font-medium text-muted-foreground">
+            i didn't know
+          </div>
+          <div className="text-xs text-muted-foreground italic">
+            it's kind of amazing
+          </div>
         </div>
         <table className="w-full text-sm">
           <tbody>
