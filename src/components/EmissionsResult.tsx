@@ -92,9 +92,12 @@ export const EmissionsResult = ({
 
       <div className="rounded-lg bg-muted/50 p-4 mb-4">
         <div className="text-xs font-medium text-muted-foreground mb-3">
-          Chemical Process:
+          i didn't know
         </div>
-        <table className="w-full text-sm mb-3">
+        <div className="text-xs text-muted-foreground italic text-center mb-3">
+          it's kind of amazing
+        </div>
+        <table className="w-full text-sm">
           <tbody>
             <tr>
               <td className="text-right text-muted-foreground pr-4 py-1.5 whitespace-nowrap">
@@ -122,9 +125,6 @@ export const EmissionsResult = ({
             </tr>
           </tbody>
         </table>
-        <div className="text-xs text-muted-foreground italic text-center">
-          So we're actually reducing the Oxygen we need to breathe!
-        </div>
       </div>
 
       <div className="space-y-3 text-sm">
