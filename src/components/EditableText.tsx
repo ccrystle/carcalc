@@ -136,24 +136,27 @@ export const EditableText = ({
   }
 
   return (
-    <div className="group relative inline-block">
+    <div className="group relative">
       <Component 
         className={`${className} whitespace-pre-line border-2 border-dashed border-primary/30 hover:border-primary/60 transition-colors cursor-pointer rounded px-2 py-1 bg-primary/20 hover:bg-primary/30`}
         onDoubleClick={() => setIsEditing(true)}
       >
         {content}
       </Component>
-      <div className="absolute -right-12 top-0 flex gap-1">
+      <div className="flex gap-1 mt-1">
         <button
           onDoubleClick={() => setIsEditing(true)}
-          className="opacity-70 hover:opacity-100 transition-opacity"
+          className="opacity-70 hover:opacity-100 transition-opacity p-1 hover:bg-primary/20 rounded"
           title="Double-click to edit"
         >
           <Pencil className="h-3 w-3 text-primary" />
         </button>
         <button
-          onClick={handleDelete}
-          className="opacity-70 hover:opacity-100 transition-opacity"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleDelete();
+          }}
+          className="opacity-70 hover:opacity-100 transition-opacity p-1 hover:bg-destructive/20 rounded"
           title="Reset to default"
         >
           <X className="h-3 w-3 text-destructive" />
