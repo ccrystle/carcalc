@@ -92,12 +92,20 @@ export const EmissionsResult = ({
 
       <div className="rounded-lg bg-muted/50 p-4 mb-4">
         <div className="mb-3">
-          <div className="text-xs font-medium text-muted-foreground">
-            i didn't know
-          </div>
-          <div className="text-xs text-muted-foreground italic">
-            it's kind of amazing
-          </div>
+          <EditableText
+            contentKey="chemistry_heading"
+            defaultContent="i didn't know"
+            className="text-xs font-medium text-muted-foreground"
+            as="div"
+            isAdmin={isAdmin}
+          />
+          <EditableText
+            contentKey="chemistry_subtitle"
+            defaultContent="it's kind of amazing"
+            className="text-xs text-muted-foreground italic"
+            as="div"
+            isAdmin={isAdmin}
+          />
         </div>
         <table className="w-full text-sm">
           <tbody>
