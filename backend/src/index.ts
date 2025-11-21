@@ -2,6 +2,7 @@ import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import mongoose from 'mongoose';
 import { config } from './config/env';
+import { loadVehicleData } from './services/vehicleDataService';
 
 const server = Fastify({
     logger: true
@@ -26,11 +27,19 @@ server.get('/health', async (request, reply) => {
 
 const start = async () => {
     try {
-        // Connect to MongoDB
-        const MONGO_URI = 'mongodb+srv://cdc-badmin:q8Hv7NxmY5lRgfdW@cluster0.ece4llm.mongodb.net/cooler-marketing?retryWrites=true&w=majority';
-        console.log('Connecting to MongoDB at:', MONGO_URI);
-        await mongoose.connect(MONGO_URI);
-        server.log.info('Connected to MongoDB');
+        // Load vehicle data into memory (no MongoDB needed)
+        console.log('Loading vehicle data...');
+        loadVehicleData();
+        server.log.info('Vehicle data loaded');
+
+        // Connect to MongoDB (only needed for Content management)
+        if (config.mongoUri) {
+            console.log('Connecting to MongoDB for Content management...');
+            await mongoose.connect(config.mongoUri);
+            server.log.info('Connected to MongoDB');
+        } else {
+            server.log.warn('MongoDB URI not configured - Content management will not work');
+        }
 
         // Start Server
         await server.listen({ port: Number(config.port), host: '0.0.0.0' });

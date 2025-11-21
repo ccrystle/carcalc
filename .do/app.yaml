@@ -1,10 +1,9 @@
 name: carcalc
 region: nyc
 
-# Frontend App (Static Site)
-apps:
+# Frontend Static Site
+static_sites:
   - name: frontend
-    type: static
     github:
       repo: ccrystle/carcalc
       branch: main
@@ -18,9 +17,9 @@ apps:
         value: ${backend.PUBLIC_URL}/api
         scope: RUN_TIME
 
-  # Backend API (Node.js with Fastify)
+# Backend API (Node.js with Fastify)
+services:
   - name: backend
-    type: web
     github:
       repo: ccrystle/carcalc
       branch: main
@@ -62,4 +61,3 @@ apps:
         value: ${JWT_SECRET}
         scope: RUN_TIME
         type: SECRET
-
