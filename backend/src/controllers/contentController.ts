@@ -1,6 +1,6 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import Content from '../models/Content';
-
+//nothing to comment
 export const getContent = async (req: FastifyRequest<{ Params: { key: string } }>, reply: FastifyReply) => {
     try {
         const { key } = req.params;
