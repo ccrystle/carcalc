@@ -1,0 +1,65 @@
+name: carcalc
+region: nyc
+
+# Frontend App (Static Site)
+apps:
+  - name: frontend
+    type: static
+    github:
+      repo: your-username/CarCalc
+      branch: main
+      deploy_on_push: true
+    build_command: npm ci && npm run build
+    output_dir: dist
+    routes:
+      - path: /
+    envs:
+      - key: VITE_API_URL
+        value: ${backend.PUBLIC_URL}/api
+        scope: RUN_TIME
+
+  # Backend API (Node.js with Fastify)
+  - name: backend
+    type: web
+    github:
+      repo: your-username/CarCalc
+      branch: main
+      deploy_on_push: true
+    source_dir: backend
+    build_command: npm ci && npm run build
+    run_command: npm start
+    environment_slug: node-js
+    instance_count: 1
+    instance_size_slug: basic-xxs
+    http_port: 3001
+    routes:
+      - path: /api
+    health_check:
+      http_path: /health
+    envs:
+      - key: NODE_ENV
+        value: production
+        scope: RUN_TIME
+      - key: PORT
+        value: "3001"
+        scope: RUN_TIME
+      - key: CLIENT_URL
+        value: ${frontend.PUBLIC_URL}
+        scope: RUN_TIME
+      - key: MONGODB_URI
+        value: ${MONGODB_URI}
+        scope: RUN_TIME
+        type: SECRET
+      - key: STRIPE_SECRET_KEY
+        value: ${STRIPE_SECRET_KEY}
+        scope: RUN_TIME
+        type: SECRET
+      - key: RESEND_API_KEY
+        value: ${RESEND_API_KEY}
+        scope: RUN_TIME
+        type: SECRET
+      - key: JWT_SECRET
+        value: ${JWT_SECRET}
+        scope: RUN_TIME
+        type: SECRET
+

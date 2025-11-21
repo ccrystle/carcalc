@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -7,7 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/lib/api";
 import { toast } from "sonner";
 import { EditableText } from "@/components/EditableText";
 
@@ -72,42 +71,16 @@ export const VehicleSelector = ({ onVehicleSelect, isAdmin }: VehicleSelectorPro
 
   const fetchYears = async () => {
     try {
-      // Use RPC to get distinct years directly
-      const { data, error } = await supabase.rpc('get_distinct_years');
+      const { data } = await api.get<number[]>('/vehicles/years');
+      setYears(data);
 
-      if (error) {
-        // Fallback to client-side deduplication if RPC doesn't exist
-        const { data: allData, error: fetchError } = await supabase
-          .from("vehicles")
-          .select("year");
-        
-        if (fetchError) throw fetchError;
-        
-        const list = (allData as Array<{ year: number }> | null) ?? [];
-        const yearSet = new Set(list.map((v) => v.year));
-        const uniqueYears = Array.from(yearSet).sort((a, b) => b - a);
-        setYears(uniqueYears);
-
-        // If no data, call edge function to populate
-        if (uniqueYears.length === 0) {
-          toast.info("Loading complete EPA vehicle database (2010-2026). This may take a moment...");
-          await supabase.functions.invoke("fetch-epa-vehicles");
-          toast.success("Vehicle database loaded successfully!");
-          fetchYears();
-        }
-        return;
-      }
-
-      const yearRows = (data as Array<{ year: number }> | null) ?? [];
-      const sortedYears = yearRows.map((item) => item.year).sort((a, b) => b - a);
-      setYears(sortedYears);
-
-      // If no data, call edge function to populate
-      if (sortedYears.length === 0) {
-        toast.info("Loading complete EPA vehicle database (2010-2026). This may take a moment...");
-        await supabase.functions.invoke("fetch-epa-vehicles");
-        toast.success("Vehicle database loaded successfully!");
-        fetchYears();
+      // If no data, try to sync (only if we have an admin endpoint or auto-sync)
+      if (data.length === 0) {
+        toast.info("Initializing vehicle database...");
+        await api.post('/vehicles/sync');
+        const { data: newData } = await api.get<number[]>('/vehicles/years');
+        setYears(newData);
+        toast.success("Vehicle database loaded!");
       }
     } catch (error) {
       console.error("Error fetching years:", error);
@@ -117,20 +90,11 @@ export const VehicleSelector = ({ onVehicleSelect, isAdmin }: VehicleSelectorPro
 
   const fetchMakes = async (year: number) => {
     try {
-      const { data, error } = await supabase
-        .from("vehicles")
-        .select("make")
-        .eq("year", year)
-        .order("make");
+      const { data } = await api.get<string[]>(`/vehicles/makes/${year}`);
+      setMakes(data);
 
-      if (error) throw error;
-
-      const rows = (data as Array<{ make: string }> | null) ?? [];
-      const uniqueMakes = Array.from(new Set(rows.map((v) => v.make)));
-      setMakes(uniqueMakes);
-      
       // Set default make to Acura if it exists
-      if (uniqueMakes.includes("Acura")) {
+      if (data.includes("Acura")) {
         setSelectedMake("Acura");
       }
     } catch (error) {
@@ -141,16 +105,8 @@ export const VehicleSelector = ({ onVehicleSelect, isAdmin }: VehicleSelectorPro
 
   const fetchModels = async (year: number, make: string) => {
     try {
-      const { data, error } = await supabase
-        .from("vehicles")
-        .select("model, mpg_combined")
-        .eq("year", year)
-        .eq("make", make)
-        .order("model");
-
-      if (error) throw error;
-
-      setModels(((data as Array<{ model: string; mpg_combined: number }>) ?? []));
+      const { data } = await api.get<Array<{ model: string; mpg_combined: number }>>(`/vehicles/models/${year}/${make}`);
+      setModels(data);
     } catch (error) {
       console.error("Error fetching models:", error);
       toast.error("Failed to load vehicle models");

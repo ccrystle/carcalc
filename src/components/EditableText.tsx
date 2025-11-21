@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
-import { Pencil, X } from "lucide-react";
 
 interface EditableTextProps {
   contentKey: string;
   defaultContent: string;
   className?: string;
-  as?: "h1" | "h2" | "p" | "div" | "span";
+  as?: "h1" | "h2" | "h3" | "p" | "div" | "span";
   isAdmin: boolean;
+  wrapperClassName?: string;
 }
 
 export const EditableText = ({
@@ -17,6 +17,7 @@ export const EditableText = ({
   className = "",
   as: Component = "p",
   isAdmin,
+  wrapperClassName = "",
 }: EditableTextProps) => {
   const [content, setContent] = useState(defaultContent);
   const [isEditing, setIsEditing] = useState(false);
@@ -28,36 +29,33 @@ export const EditableText = ({
   }, [contentKey]);
 
   const loadContent = async () => {
-    const { data } = await supabase
-      .from("page_content")
-      .select("content")
-      .eq("key", contentKey)
-      .single();
-
-    if (data) {
-      setContent(data.content);
-      setEditValue(data.content);
+    try {
+      const response = await api.get(`/content/${contentKey}`);
+      if (response.data && response.data.content) {
+        setContent(response.data.content);
+        setEditValue(response.data.content);
+      }
+    } catch (error) {
+      // If content doesn't exist yet, that's fine, stick with default
+      // console.log("Content not found, using default");
     }
   };
 
   const handleSave = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    const { error } = await supabase
-      .from("page_content")
-      .upsert({ key: contentKey, content: editValue }, { onConflict: "key" });
-
-    if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update content",
-        variant: "destructive",
-      });
-    } else {
+    try {
+      await api.post(`/content/${contentKey}`, { content: editValue });
       setContent(editValue);
       setIsEditing(false);
       toast({
         title: "Success",
-        description: "Content updated",
+        description: "Content updated successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update content",
+        variant: "destructive",
       });
     }
   };
@@ -69,22 +67,19 @@ export const EditableText = ({
   };
 
   const handleDelete = async () => {
-    const { error } = await supabase
-      .from("page_content")
-      .upsert({ key: contentKey, content: defaultContent }, { onConflict: "key" });
-
-    if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to reset content",
-        variant: "destructive",
-      });
-    } else {
+    try {
+      await api.post(`/content/${contentKey}`, { content: defaultContent });
       setContent(defaultContent);
       setEditValue(defaultContent);
       toast({
         title: "Success",
         description: "Content reset to default",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to reset content",
+        variant: "destructive",
       });
     }
   };
@@ -96,7 +91,7 @@ export const EditableText = ({
   if (isEditing) {
     return (
       <div className="relative">
-        {Component === "h1" || Component === "h2" ? (
+        {Component === "h1" || Component === "h2" || Component === "h3" ? (
           <input
             type="text"
             value={editValue}
@@ -117,7 +112,7 @@ export const EditableText = ({
             rows={3}
           />
         )}
-        <div className="mt-2 flex gap-2">
+        <div className="mt-2 flex gap-2 z-50 relative">
           <button
             onClick={handleSave}
             className="rounded bg-primary px-3 py-1 text-xs text-primary-foreground hover:bg-primary/90"
@@ -136,32 +131,14 @@ export const EditableText = ({
   }
 
   return (
-    <div className="group relative">
-      <Component 
-        className={`${className} whitespace-pre-line border-2 border-dashed border-primary/30 hover:border-primary/60 transition-colors cursor-pointer rounded px-2 py-1 bg-primary/20 hover:bg-primary/30`}
+    <div className={`group relative inline-block ${wrapperClassName || "w-full"}`}>
+      <Component
+        className={`${className} whitespace-pre-line border-2 border-transparent hover:border-primary/30 transition-colors cursor-pointer rounded px-1 -mx-1`}
         onDoubleClick={() => setIsEditing(true)}
       >
         {content}
       </Component>
-      <div className="flex gap-1 mt-1">
-        <button
-          onDoubleClick={() => setIsEditing(true)}
-          className="opacity-70 hover:opacity-100 transition-opacity p-1 hover:bg-primary/20 rounded"
-          title="Double-click to edit"
-        >
-          <Pencil className="h-3 w-3 text-primary" />
-        </button>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            handleDelete();
-          }}
-          className="opacity-70 hover:opacity-100 transition-opacity p-1 hover:bg-destructive/20 rounded"
-          title="Reset to default"
-        >
-          <X className="h-3 w-3 text-destructive" />
-        </button>
-      </div>
     </div>
   );
 };
+
